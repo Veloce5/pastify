@@ -1,0 +1,30 @@
+# ==========================================
+# Pastify - Git Ignore Rules
+# ==========================================
+
+# 1. Data & Media (NEVER track these due to size and privacy)
+past_papers*.db
+output_questions/
+split_papers.log
+*.bak_*
+
+# 2. Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+
+# 3. OS Generated Files (Mac/Windows junk)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 4. Streamlit specific
+.streamlit/secrets.toml
