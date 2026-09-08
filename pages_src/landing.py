@@ -14,7 +14,7 @@ FOOTER_LINKS = [
 
 
 def _render_footer():
-    links_html = " | ".join(f'<a href="{l["url"]}">{l["label"]}</a>' for l in FOOTER_LINKS)
+    links_html = " | ".join(f'<a href="{l["url"]}">{l["label"]}</a>' for link in FOOTER_LINKS)
     st.markdown(f'<div class="footer"><p>&copy; 2026 Pastify | {links_html}</p></div>', unsafe_allow_html=True)
 
 
