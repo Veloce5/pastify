@@ -49,9 +49,15 @@ def _where_clause(filters: dict) -> tuple[str, list]:
             params.append(value)
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
+ALLOWED_COLUMNS = {
+    "Subject_name", "Subject_code", "Topic", "Sub_topic", 
+    "Year", "Variant", "Paper_number", "Paper_variant", "Difficulty"
+}
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def get_distinct_values(column: str, filters: dict | None = None) -> list:
+def get_distinct_values(column: str, filters: dict = None) -> list:
+    if column not in ALLOWED_COLUMNS:
+        raise ValueError(f"Invalid column requested: {column}")
     filters = _normalize(filters)
     conn = get_connection()
     where, params = _where_clause(filters)

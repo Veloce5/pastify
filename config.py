@@ -25,23 +25,18 @@ OUTPUT_DIR = APP_DIR / "output_questions"
 _warned_missing_output_dir = False
 
 
-def resolve_media_path(relative_path: str | None) -> Path | None:
-    """Turns a DB-stored relative path ('qp/9618/2024/May_June/12/1(a).pdf')
-    into a real, absolute filesystem Path. Pure pathlib join — no string
-    slicing, no OS-separator assumptions. Returns None for NULL/empty input."""
-    global _warned_missing_output_dir
+def resolve_media_path(relative_path: str) -> Path | None:
     if not relative_path:
         return None
-
-    if not OUTPUT_DIR.exists() and not _warned_missing_output_dir:
-        import logging
-        logging.warning(
-            "OUTPUT_DIR does not exist: %s — every PDF lookup will report "
-            "'missing from disk' until this folder is present.", OUTPUT_DIR,
-        )
-        _warned_missing_output_dir = True
-
-    return (OUTPUT_DIR / relative_path).resolve()
+        
+    try:
+        resolved = (OUTPUT_DIR / relative_path).resolve(strict=False)
+        # Security check: Ensure the final path is actually inside OUTPUT_DIR
+        if not resolved.is_relative_to(OUTPUT_DIR):
+            return None
+        return resolved
+    except (ValueError, RuntimeError):
+        return None
 
 
 # ---------------------------------------------------------------------------
