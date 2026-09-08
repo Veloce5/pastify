@@ -25,7 +25,136 @@ from database import (
 
 
 # ---------------------------------------------------------------------------
-# Filter panel
+# Filter Panel Helpers (Refactored to reduce Cyclomatic Complexity)
+# ---------------------------------------------------------------------------
+def _render_keyword_search() -> None:
+    keyword = st.text_input(
+        "Search topics", key="keyword_search", placeholder="e.g. 'photosynthesis', 'binary trees'…",
+        label_visibility="collapsed",
+    )
+    if keyword and len(keyword.strip()) >= 2:
+        matches = search_topics(keyword)
+        if matches:
+            st.caption(f"{len(matches)} topic match(es):")
+            for m in matches[:6]:
+                label = f"{m['subject']} · {m['topic']}"
+                if st.button(label, key=f"search_hit_{m['subject']}_{m['topic']}_{m['sub_topic']}", use_container_width=True):
+                    st.session_state["subject_select"] = m["subject"]
+                    st.session_state["_pending_topic"] = m["topic"]
+                    st.rerun()
+        else:
+            st.caption("No topics match that search.")
+        st.divider()
+
+
+def _render_topic_tab(selected_subject: str, pending_topic: str | None) -> tuple[list, list]:
+    sorted_topics, unsorted_topics = utils.get_sorted_topics(selected_subject)
+    all_topics = sorted_topics + unsorted_topics
+    default_topics = [pending_topic] if pending_topic in all_topics else []
+    
+    select_all_topics = st.checkbox("Select all topics", key="all_topics")
+    topics = st.multiselect(
+        "Topics", all_topics,
+        default=all_topics if select_all_topics else default_topics,
+        key="topics_multiselect",
+    )
+    
+    subtopics = []
+    if topics:
+        sub_list, _ = utils.get_sorted_subtopics(selected_subject, topics)
+        select_all_sub = st.checkbox("Select all subtopics", key="all_subtopics")
+        subtopics = st.multiselect(
+            "Subtopics", sub_list,
+            default=sub_list if select_all_sub else [],
+            key="subtopics_multiselect",
+        )
+    return topics, subtopics
+
+
+def _render_year_variant_tab(selected_subject: str, topics: list, subtopics: list) -> tuple[list, list]:
+    years_list = get_distinct_values("Year", {
+        "Subject_name": selected_subject, "Topic": topics, "Sub_topic": subtopics,
+    })
+    
+    select_all_years = st.checkbox("Select all years", key="all_years")
+    years = st.multiselect(
+        "Years", sorted(years_list, reverse=True),
+        default=years_list if select_all_years else [],
+        key="years_multiselect",
+    )
+    
+    variants = []
+    if years:
+        var_list = get_distinct_values("Variant", {
+            "Subject_name": selected_subject, "Year": years,
+            "Topic": topics, "Sub_topic": subtopics,
+        })
+        select_all_variants = st.checkbox("Select all variants", key="all_variants")
+        variants = st.multiselect(
+            "Variants", var_list,
+            default=var_list if select_all_variants else [],
+            key="variants_multiselect",
+        )
+    return years, variants
+
+
+def _render_paper_tab(selected_subject: str, topics: list, subtopics: list, years: list, variants: list) -> tuple[list, list]:
+    paper_numbers = []
+    paper_variants = []
+    
+    if variants:
+        pn_list = get_distinct_values("Paper_number", {
+            "Subject_name": selected_subject, "Year": years,
+            "Variant": variants, "Topic": topics,
+            "Sub_topic": subtopics,
+        })
+        select_all_pn = st.checkbox("Select all paper numbers", key="all_paper_numbers")
+        paper_numbers = st.multiselect(
+            "Paper Numbers", pn_list,
+            default=pn_list if select_all_pn else [],
+            key="paper_numbers_multiselect",
+        )
+        
+        if paper_numbers:
+            pv_list = get_distinct_values("Paper_variant", {
+                "Subject_name": selected_subject, "Year": years,
+                "Variant": variants, "Paper_number": paper_numbers,
+                "Topic": topics, "Sub_topic": subtopics,
+            })
+            select_all_pv = st.checkbox("Select all paper variants", key="all_paper_variants")
+            paper_variants = st.multiselect(
+                "Paper Variants", pv_list,
+                default=pv_list if select_all_pv else [],
+                key="paper_variants_multiselect",
+            )
+    else:
+        st.caption("Select a variant first.")
+        
+    return paper_numbers, paper_variants
+
+
+def _render_difficulty_tab(selected_subject: str, topics: list, subtopics: list, years: list, variants: list, paper_numbers: list, paper_variants: list, is_ready: bool) -> list:
+    difficulties = []
+    if is_ready:
+        diff_list = get_distinct_values("Difficulty", {
+            "Subject_name": selected_subject, "Year": years,
+            "Variant": variants, "Paper_number": paper_numbers,
+            "Paper_variant": paper_variants, "Topic": topics,
+            "Sub_topic": subtopics,
+        })
+        select_all_diff = st.checkbox("Select all difficulties", key="all_difficulties")
+        difficulties = st.multiselect(
+            "Difficulty Levels", diff_list,
+            default=diff_list if select_all_diff else [],
+            key="difficulties_multiselect",
+        )
+    else:
+        st.caption("Keep narrowing the filters above first.")
+    return difficulties
+
+
+# ---------------------------------------------------------------------------
+# Filter panel (Main Entry)
 # ---------------------------------------------------------------------------
 def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool = True) -> dict:
     with st.sidebar:
@@ -35,24 +164,7 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
             reset_keys(FILTER_KEYS, BROWSE_RESULT_KEYS, PLAY_RESULT_KEYS)
             st.rerun()
 
-        # --- Dynamic keyword search -----------------------------------
-        keyword = st.text_input(
-            "Search topics", key="keyword_search", placeholder="e.g. 'photosynthesis', 'binary trees'…",
-            label_visibility="collapsed",
-        )
-        if keyword and len(keyword.strip()) >= 2:
-            matches = search_topics(keyword)
-            if matches:
-                st.caption(f"{len(matches)} topic match(es):")
-                for m in matches[:6]:
-                    label = f"{m['subject']} · {m['topic']}"
-                    if st.button(label, key=f"search_hit_{m['subject']}_{m['topic']}_{m['sub_topic']}", use_container_width=True):
-                        st.session_state["subject_select"] = m["subject"]
-                        st.session_state["_pending_topic"] = m["topic"]
-                        st.rerun()
-            else:
-                st.caption("No topics match that search.")
-            st.divider()
+        _render_keyword_search()
 
         # --- Primary selector (always visible) --------------------------
         subject_list = get_quiz_ready_subjects() if quiz_mode else get_subjects()
@@ -85,95 +197,30 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
             tab_idx = 0
 
             with tabs[tab_idx]:
-                sorted_topics, unsorted_topics = utils.get_sorted_topics(selected_subject)
-                all_topics = sorted_topics + unsorted_topics
-                default_topics = [pending_topic] if pending_topic in all_topics else []
-                select_all_topics = st.checkbox("Select all topics", key="all_topics")
-                selections["topics"] = st.multiselect(
-                    "Topics", all_topics,
-                    default=all_topics if select_all_topics else default_topics,
-                    key="topics_multiselect",
-                )
-                if selections["topics"]:
-                    subtopics, _ = utils.get_sorted_subtopics(selected_subject, selections["topics"])
-                    select_all_sub = st.checkbox("Select all subtopics", key="all_subtopics")
-                    selections["subtopics"] = st.multiselect(
-                        "Subtopics", subtopics,
-                        default=subtopics if select_all_sub else [],
-                        key="subtopics_multiselect",
-                    )
+                selections["topics"], selections["subtopics"] = _render_topic_tab(selected_subject, pending_topic)
             tab_idx += 1
 
             with tabs[tab_idx]:
-                years = get_distinct_values("Year", {
-                    "Subject_name": selected_subject, "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
-                })
-                select_all_years = st.checkbox("Select all years", key="all_years")
-                selections["years"] = st.multiselect(
-                    "Years", sorted(years, reverse=True),
-                    default=years if select_all_years else [],
-                    key="years_multiselect",
+                selections["years"], selections["variants"] = _render_year_variant_tab(
+                    selected_subject, selections["topics"], selections["subtopics"]
                 )
-                if selections["years"]:
-                    variants = get_distinct_values("Variant", {
-                        "Subject_name": selected_subject, "Year": selections["years"],
-                        "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
-                    })
-                    select_all_variants = st.checkbox("Select all variants", key="all_variants")
-                    selections["variants"] = st.multiselect(
-                        "Variants", variants,
-                        default=variants if select_all_variants else [],
-                        key="variants_multiselect",
-                    )
             tab_idx += 1
 
             if include_paper_selectors:
                 with tabs[tab_idx]:
-                    if selections["variants"]:
-                        paper_numbers = get_distinct_values("Paper_number", {
-                            "Subject_name": selected_subject, "Year": selections["years"],
-                            "Variant": selections["variants"], "Topic": selections["topics"],
-                            "Sub_topic": selections["subtopics"],
-                        })
-                        select_all_pn = st.checkbox("Select all paper numbers", key="all_paper_numbers")
-                        selections["paper_numbers"] = st.multiselect(
-                            "Paper Numbers", paper_numbers,
-                            default=paper_numbers if select_all_pn else [],
-                            key="paper_numbers_multiselect",
-                        )
-                        if selections["paper_numbers"]:
-                            paper_variants = get_distinct_values("Paper_variant", {
-                                "Subject_name": selected_subject, "Year": selections["years"],
-                                "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
-                                "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
-                            })
-                            select_all_pv = st.checkbox("Select all paper variants", key="all_paper_variants")
-                            selections["paper_variants"] = st.multiselect(
-                                "Paper Variants", paper_variants,
-                                default=paper_variants if select_all_pv else [],
-                                key="paper_variants_multiselect",
-                            )
-                    else:
-                        st.caption("Select a variant first.")
+                    selections["paper_numbers"], selections["paper_variants"] = _render_paper_tab(
+                        selected_subject, selections["topics"], selections["subtopics"],
+                        selections["years"], selections["variants"]
+                    )
                 tab_idx += 1
 
             with tabs[tab_idx]:
                 ready = selections["paper_variants"] if include_paper_selectors else selections["years"]
-                if ready:
-                    difficulties = get_distinct_values("Difficulty", {
-                        "Subject_name": selected_subject, "Year": selections["years"],
-                        "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
-                        "Paper_variant": selections["paper_variants"], "Topic": selections["topics"],
-                        "Sub_topic": selections["subtopics"],
-                    })
-                    select_all_diff = st.checkbox("Select all difficulties", key="all_difficulties")
-                    selections["difficulties"] = st.multiselect(
-                        "Difficulty Levels", difficulties,
-                        default=difficulties if select_all_diff else [],
-                        key="difficulties_multiselect",
-                    )
-                else:
-                    st.caption("Keep narrowing the filters above first.")
+                selections["difficulties"] = _render_difficulty_tab(
+                    selected_subject, selections["topics"], selections["subtopics"],
+                    selections["years"], selections["variants"], selections["paper_numbers"],
+                    selections["paper_variants"], bool(ready)
+                )
 
         # Quick-glance chip summary so the collapsed popover doesn't hide state
         chips = []
