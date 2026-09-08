@@ -27,4 +27,4 @@ ehthumbs.db
 Thumbs.db
 
 # 4. Streamlit specific
-.streamlit/secrets.toml
+.streamlit/secrets.tomlprogress.db

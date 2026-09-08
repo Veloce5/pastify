@@ -1,14 +1,14 @@
 """
 config.py
 
-Now that past_papers.db stores portable relative paths (run clean_db.py once
-if you haven't), OUTPUT_DIR is the single place that knows where the actual
-`output_questions/` media folder lives on whatever machine the app is
-running on — your Mac today, a cloud volume tomorrow. Nothing else in the
-codebase should ever hardcode a path or do string surgery on one; everything
-resolves through `resolve_media_path()` below.
+Single source of truth for paths, performance bootstrapping (DB indexes),
+and the session-state key registries every "Reset" button in the app reads
+from — so resets can never drift out of sync between pages again.
 """
 
+from __future__ import annotations
+
+import sqlite3
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -16,30 +16,20 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 APP_DIR = Path(__file__).parent
 DB_PATH = APP_DIR / "past_papers.db"
+PROGRESS_DB_PATH = APP_DIR / "progress.db"  # local attempt history / streaks / badges
 CSS_PATH = APP_DIR / "styles.css"
 LOGO_PATH = APP_DIR / "1280x720.png"
 
-# The relative paths stored in Question/Answer are resolved against this.
-# Override at deploy time with an env var if the media lives outside the
-# app folder (e.g. a mounted volume or object-storage sync target):
-#     OUTPUT_DIR = Path(os.environ.get("PASTIFY_OUTPUT_DIR", APP_DIR / "output_questions"))
 OUTPUT_DIR = APP_DIR / "output_questions"
 
-_warned_missing_output_dir = False  # module-level flag so we only warn once per process
+_warned_missing_output_dir = False
 
 
 def resolve_media_path(relative_path: str | None) -> Path | None:
-    """The one function that turns a DB-stored relative path (e.g.
-    'qp/9618/2024/May_June/12/1(a).pdf') into a real, absolute filesystem
-    Path. Returns None for empty/NULL input (e.g. a quiz-mode letter
-    answer, which isn't a path at all and should never reach this
-    function's caller expecting a file).
-
-    No string slicing, no `.find()`, no assumptions about the OS path
-    separator — just a pure pathlib join against OUTPUT_DIR.
-    """
+    """Turns a DB-stored relative path ('qp/9618/2024/May_June/12/1(a).pdf')
+    into a real, absolute filesystem Path. Pure pathlib join — no string
+    slicing, no OS-separator assumptions. Returns None for NULL/empty input."""
     global _warned_missing_output_dir
-
     if not relative_path:
         return None
 
@@ -51,69 +41,76 @@ def resolve_media_path(relative_path: str | None) -> Path | None:
         )
         _warned_missing_output_dir = True
 
-    # PurePosixPath semantics: DB values always use "/" regardless of host
-    # OS; Path(...) below adapts to the local OS correctly either way.
     return (OUTPUT_DIR / relative_path).resolve()
+
+
+# ---------------------------------------------------------------------------
+# Performance: one-time index bootstrap
+# ---------------------------------------------------------------------------
+_INDEX_STATEMENTS = [
+    "CREATE INDEX IF NOT EXISTS idx_subject ON past_papers(Subject_name)",
+    "CREATE INDEX IF NOT EXISTS idx_subject_code ON past_papers(Subject_code)",
+    "CREATE INDEX IF NOT EXISTS idx_topic ON past_papers(Subject_name, Topic)",
+    "CREATE INDEX IF NOT EXISTS idx_year ON past_papers(Subject_name, Year)",
+    "CREATE INDEX IF NOT EXISTS idx_variant ON past_papers(Subject_name, Year, Variant)",
+    "CREATE INDEX IF NOT EXISTS idx_paper ON past_papers(Subject_name, Year, Variant, Paper_number, Paper_variant)",
+    "CREATE INDEX IF NOT EXISTS idx_question_path ON past_papers(Question)",
+]
+
+
+def ensure_indexes(conn: sqlite3.Connection) -> None:
+    """Every filter cascade in this app WHEREs on some prefix of
+    (Subject_name, Topic, Year, Variant, Paper_number, Paper_variant) — the
+    original schema had zero indexes, so every one of those queries was a
+    full table scan. Safe to call on every startup; CREATE INDEX IF NOT
+    EXISTS is a no-op after the first run."""
+    for stmt in _INDEX_STATEMENTS:
+        conn.execute(stmt)
+    conn.commit()
 
 
 # ---------------------------------------------------------------------------
 # Session-state key registries
 # ---------------------------------------------------------------------------
 FILTER_KEYS = [
-    "subject_select",
-    "topics_multiselect",
-    "subtopics_multiselect",
-    "years_multiselect",
-    "variants_multiselect",
-    "paper_numbers_multiselect",
-    "paper_variants_multiselect",
-    "difficulties_multiselect",
-    "all_topics",
-    "all_subtopics",
-    "all_years",
-    "all_variants",
-    "all_paper_numbers",
-    "all_paper_variants",
-    "all_difficulties",
+    "subject_select", "topics_multiselect", "subtopics_multiselect",
+    "years_multiselect", "variants_multiselect", "paper_numbers_multiselect",
+    "paper_variants_multiselect", "difficulties_multiselect",
+    "all_topics", "all_subtopics", "all_years", "all_variants",
+    "all_paper_numbers", "all_paper_variants", "all_difficulties",
+    "keyword_search",
 ]
 
 BROWSE_RESULT_KEYS = [
-    "question_paths_list",
-    "answer_paths_list",
-    "current_index",
-    "show_question",
+    "question_paths_list", "answer_paths_list", "current_index", "show_question",
 ]
 
 PLAY_RESULT_KEYS = [
-    "paper_paths_list",
-    "current_node",
-    "current_answer",
-    "user_feedback",
-    "correct_count",
-    "wrong_count",
-    "attempt_log",
-    "answered_nodes",
+    "paper_paths_list", "current_node", "current_answer", "user_feedback",
+    "correct_count", "wrong_count", "attempt_log", "answered_nodes",
+    "question_shown_at",
 ]
 
-TIMER_KEYS = [
-    "timer_start",
-    "time_up",
-    "finished_test",
-]
+TIMER_KEYS = ["timer_start", "time_up", "finished_test"]
 
-ALL_RESETTABLE_KEYS = FILTER_KEYS + BROWSE_RESULT_KEYS + PLAY_RESULT_KEYS + TIMER_KEYS
+CART_KEYS = ["worksheet_cart", "worksheet_zip", "worksheet_count"]
+
+ALL_RESETTABLE_KEYS = FILTER_KEYS + BROWSE_RESULT_KEYS + PLAY_RESULT_KEYS + TIMER_KEYS + CART_KEYS
 
 
-def reset_keys(*key_groups):
-    """Delete every key in the given groups (lists of str) from session_state."""
+def reset_keys(*key_groups) -> None:
     import streamlit as st
-
     for group in key_groups:
         for key in group:
             st.session_state.pop(key, None)
 
 
 # ---------------------------------------------------------------------------
-# Misc display settings
+# Misc settings
 # ---------------------------------------------------------------------------
-PDF_RENDER_ZOOM = 2.0  # PyMuPDF zoom factor for question/answer rendering
+PDF_RENDER_ZOOM = 2.0
+
+# Gamification thresholds
+BADGE_ACCURACY_THRESHOLDS = {"Sharp Shooter": 0.90, "Reliable": 0.75}
+BADGE_VOLUME_THRESHOLDS = {"Century Club": 100, "Half Century": 50, "Getting Started": 10}
+BADGE_STREAK_THRESHOLDS = {"7-Day Streak": 7, "3-Day Streak": 3}

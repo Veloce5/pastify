@@ -1,16 +1,11 @@
 """
-timed_test.py (replaces timed_test.py + timed_test_selection.py)
+timed_test.py
 
-Timer fix: the original `run_timer()` was a bare `while True: sleep(1)` loop
-that runs *inside* a single Streamlit script execution — meaning the script
-never reaches completion, so no other widget on the page (Next, Previous,
-answer buttons) can ever be interacted with while the timer is "running".
-It's replaced with an `st.fragment(run_every="1s")`, Streamlit's native
-mechanism for a self-refreshing region that doesn't block the rest of the
-page.
-
-The duration selector also drops the unused `streamlit_extras` dependency
-(timed_test_selection.py) in favour of the built-in `st.segmented_control`.
+The timer runs in an st.fragment(run_every="1s") — Streamlit's native
+self-refreshing region — instead of the blocking `while True: sleep(1)`
+loop earlier versions of this app used, which froze every other button on
+the page for the full duration of the test. Duration presets use
+st.segmented_control instead of a bare number input.
 """
 
 from datetime import datetime
@@ -20,11 +15,14 @@ import streamlit as st
 
 import theme
 import utils
-from components import render_filter_sidebar, render_empty_state, render_results_dashboard
+import progress
+from components import render_filter_sidebar, render_empty_state, render_badge_shelf
+from analytics import render_accuracy_heatmap, render_accuracy_donut
 from config import PLAY_RESULT_KEYS, TIMER_KEYS, reset_keys
 from database import filter_papers
-from feedback import render_answer_options
+from feedback import render_answer_options, mark_question_shown
 from linked_list import DoublyLinkedList
+from profile import current_profile, render_profile_badge
 
 DURATION_PRESETS = {"5 min": 5, "10 min": 10, "20 min": 20, "30 min": 30, "60 min": 60}
 
@@ -48,11 +46,13 @@ def _render_timer(total_seconds: int):
 
 def render():
     theme.apply_page_theme()
+    profile = current_profile()
     with st.sidebar:
         theme.theme_toggle()
+    render_profile_badge()
 
     st.title("⏱️ Timed Test")
-    st.write("👾 Set a duration, answer as many as you can, review your score at the end.")
+    st.write("👾 Set a duration, answer as many as you can, review a full results dashboard at the end.")
 
     with st.sidebar:
         st.header("⏱️ Test Duration")
@@ -76,7 +76,7 @@ def render():
             render_empty_state("No questions matched those filters", "Try widening Topic or Year.", icon="🔍")
             return
 
-        entries = [(r[11], r[2], r[12]) for r in results]
+        entries = [(r[11], r[2], r[12], r[10]) for r in results]  # (path, topic, answer, question_number)
         random.shuffle(entries)
 
         dll = DoublyLinkedList.from_iterable(entries)
@@ -85,6 +85,7 @@ def render():
         st.session_state.current_answer = dll.head.data[2]
         st.session_state.timer_start = datetime.now()
         st.session_state.test_duration_seconds = duration_minutes * 60
+        mark_question_shown()
         st.rerun()
 
     dll = st.session_state.get("paper_paths_list")
@@ -97,15 +98,27 @@ def render():
         _render_timer(st.session_state.get("test_duration_seconds", duration_minutes * 60))
 
     finished = st.session_state.get("finished_test", False)
-
     utils.add_divider(1)
 
     if finished:
-        render_results_dashboard(
-            st.session_state.get("correct_count", 0),
-            st.session_state.get("wrong_count", 0),
-            st.session_state.get("attempt_log", []),
-        )
+        correct = st.session_state.get("correct_count", 0)
+        wrong = st.session_state.get("wrong_count", 0)
+        total = correct + wrong
+
+        st.subheader("📊 Test Complete — Your Results")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Correct", correct)
+        c2.metric("Incorrect", wrong)
+        c3.metric("Accuracy", f"{(correct/total*100) if total else 0:.0f}%")
+
+        tab1, tab2 = st.tabs(["Accuracy by Topic", "Badges Unlocked"])
+        with tab1:
+            topic_acc = progress.get_topic_accuracy(profile, subject=selections.get("subject"))
+            render_accuracy_heatmap(topic_acc)
+            render_accuracy_donut(correct, wrong)
+        with tab2:
+            render_badge_shelf(progress.compute_badges(profile))
+
         if st.button("🔁 Start a new test", type="primary"):
             reset_keys(PLAY_RESULT_KEYS, TIMER_KEYS)
             st.rerun()
@@ -115,7 +128,7 @@ def render():
         st.session_state.current_node = dll.head
 
     node = st.session_state.current_node
-    pdf_path, topic, correct_answer = node.data
+    pdf_path, topic, correct_answer, _question_number = node.data
     st.session_state.current_answer = correct_answer
 
     utils.render_pdf(pdf_path, empty_message="This question's PDF is missing from disk.")
@@ -125,14 +138,16 @@ def render():
     with col1:
         if st.button("⬅ Previous", use_container_width=True, disabled=node.prev is None, key="previous_button"):
             st.session_state.current_node = dll.get_previous(node)
+            mark_question_shown()
             st.rerun()
     with col2:
         if st.button("Next ➡", use_container_width=True, disabled=node.next is None, key="next_button"):
             st.session_state.current_node = dll.get_next(node)
+            mark_question_shown()
             st.rerun()
 
     st.write("**Choose your answer:**")
-    render_answer_options(mode="test", topic=topic)
+    render_answer_options(mode="test", topic=topic, subject=selections["subject"], profile=profile)
 
 
 render()

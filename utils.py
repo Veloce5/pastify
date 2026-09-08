@@ -29,14 +29,17 @@ def _render_pdf_pages(resolved_path: str, _mtime: float, zoom: float = PDF_RENDE
     """Rasterize every page of a PDF to PNG bytes. `resolved_path` is always
     an already-resolved absolute path by the time it gets here; `_mtime` is
     part of the cache key so an edited file on disk correctly busts the
-    cache."""
+    cache. `alpha=False` skips the alpha channel PyMuPDF would otherwise
+    allocate per pixmap — exam PDFs have no transparency to preserve, and
+    this alone cuts peak memory per page by roughly a quarter."""
     images: list[bytes] = []
     doc = fitz.open(resolved_path)
     try:
         mat = fitz.Matrix(zoom, zoom)
         for page in doc:
-            pix = page.get_pixmap(matrix=mat)
+            pix = page.get_pixmap(matrix=mat, alpha=False)
             images.append(pix.tobytes("png"))
+            pix = None  # drop the reference eagerly; pages can be large
     finally:
         doc.close()
     return images

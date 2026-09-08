@@ -1,20 +1,24 @@
-"""browse.py (replaces app.py) — filter and page through past papers."""
+"""browse.py — filter, page through, and cart past papers."""
+
+import random
 
 import streamlit as st
 
 import theme
 import utils
-from components import render_filter_sidebar, render_empty_state, render_paper_detail_card
+from components import render_filter_sidebar, render_empty_state, render_paper_detail_card, add_paper_to_cart
 from config import BROWSE_RESULT_KEYS, reset_keys
 from database import filter_papers
+from profile import render_profile_badge
 
 
 def render():
     theme.apply_page_theme()
     with st.sidebar:
         theme.theme_toggle()
+    render_profile_badge()
 
-    st.title("📚 Past Paper Filter Tool")
+    st.title("📚 Browse Papers")
     st.write("Filter past papers by subject, topic, year, and difficulty — then flip between question and answer.")
 
     selections = render_filter_sidebar(quiz_mode=False, include_paper_selectors=True)
@@ -30,8 +34,6 @@ def render():
             st.success(f"Found {len(results)} papers matching your criteria.")
             questions = [r[11] for r in results]
             answers = [r[12] for r in results]
-
-            import random
             paired = list(zip(questions, answers))
             random.shuffle(paired)
             questions, answers = zip(*paired)
@@ -55,14 +57,18 @@ def render():
         show_q = st.session_state.get("show_question", True)
 
         utils.add_divider(1)
-        st.caption(f"Paper {idx + 1} of {total}")
+        top_l, top_r = st.columns([3, 1])
+        top_l.caption(f"Paper {idx + 1} of {total}")
+        with top_r:
+            if st.button("🛒 Add to cart", use_container_width=True, key="add_to_cart_browse"):
+                added = add_paper_to_cart(q_path, a_path, label=f"Question {idx + 1}")
+                st.toast("Added to worksheet cart!" if added else "Already in your cart.", icon="🛒")
 
         _, mid, _ = st.columns([1, 2, 1])
         with mid:
             if st.button(
                 "🙈 Show Answer" if show_q else "📖 Show Question",
-                use_container_width=True,
-                key="show_answer_button",
+                use_container_width=True, key="show_answer_button",
             ):
                 st.session_state.show_question = not show_q
                 st.rerun()

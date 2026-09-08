@@ -1,16 +1,12 @@
 """
-theme.py  (replaces theme_management.py)
+theme.py
 
-The original implementation wrote `~/.streamlit/config.toml` on every
-toggle. On any deployment with more than one concurrent user, that's a
-shared, server-wide file — one person flipping to dark mode changes the
-theme for *everyone else's* browser tab too, and it typically requires a
-full app restart to reliably take effect.
-
-This version keeps the toggle 100% client-side and per-session: it injects
-a small <style> block that overrides Streamlit's own CSS custom properties
-for this render only. No filesystem writes, no cross-user leakage, and it
-applies instantly on the same rerun the toggle was clicked in.
+Per-session CSS-variable theme override (never writes a global config.toml
+— see MIGRATION_NOTES.md for why that was a real multi-user bug in an
+earlier version). This version adds a richer premium palette: a proper
+accent/success/warning/danger scale instead of just one primary color, so
+badges, accuracy states, and charts all pull from the same system instead
+of ad-hoc hex codes scattered through the codebase.
 """
 
 import streamlit as st
@@ -18,34 +14,42 @@ import streamlit as st
 from config import CSS_PATH
 
 LIGHT_VARS = {
-    "--primary-color": "#2563EB",
+    "--primary-color": "#4F46E5",       # indigo — primary actions
+    "--accent-color": "#7C3AED",        # violet — secondary accents / gradients
+    "--success-color": "#059669",
+    "--warning-color": "#D97706",
+    "--danger-color": "#DC2626",
     "--background-color": "#FFFFFF",
     "--secondary-background-color": "#F8FAFC",
+    "--surface-color": "#FFFFFF",
     "--text-color": "#0F172A",
-    "--border-color": "rgba(15, 23, 42, 0.10)",
+    "--text-muted": "#64748B",
+    "--border-color": "rgba(15, 23, 42, 0.08)",
+    "--shadow-color": "rgba(15, 23, 42, 0.06)",
 }
 
 DARK_VARS = {
-    "--primary-color": "#3B82F6",
-    "--background-color": "#0F172A",
-    "--secondary-background-color": "#1E293B",
-    "--text-color": "#F8FAFC",
-    "--border-color": "rgba(248, 250, 252, 0.12)",
+    "--primary-color": "#818CF8",
+    "--accent-color": "#A78BFA",
+    "--success-color": "#34D399",
+    "--warning-color": "#FBBF24",
+    "--danger-color": "#F87171",
+    "--background-color": "#0B1120",
+    "--secondary-background-color": "#151E30",
+    "--surface-color": "#1B2537",
+    "--text-color": "#F1F5F9",
+    "--text-muted": "#94A3B8",
+    "--border-color": "rgba(241, 245, 249, 0.10)",
+    "--shadow-color": "rgba(0, 0, 0, 0.35)",
 }
 
 
 def _vars_to_css(vars_dict: dict) -> str:
     body = "\n".join(f"    {k}: {v} !important;" for k, v in vars_dict.items())
-    return (
-        "<style>\n"
-        f":root, .stApp {{\n{body}\n}}\n"
-        "</style>"
-    )
+    return f"<style>\n:root, .stApp {{\n{body}\n}}\n</style>"
 
 
 def inject_theme() -> None:
-    """Apply the current session's theme override. Call once near the top
-    of every page, after set_page_config()."""
     is_dark = st.session_state.get("dark_mode", False)
     st.markdown(_vars_to_css(DARK_VARS if is_dark else LIGHT_VARS), unsafe_allow_html=True)
 
@@ -60,17 +64,13 @@ def load_css() -> None:
 
 
 def apply_page_theme() -> None:
-    """One call, at the top of every page: applies the light/dark variable
-    override for this session, then loads the static stylesheet."""
     inject_theme()
     load_css()
 
 
 def theme_toggle() -> None:
-    """Render the Dark Mode toggle. Safe to call from any page's sidebar."""
     if "dark_mode" not in st.session_state:
         st.session_state.dark_mode = False
-
     new_value = st.toggle("🌙 Dark Mode", value=st.session_state.dark_mode, key="dark_mode_toggle")
     if new_value != st.session_state.dark_mode:
         st.session_state.dark_mode = new_value

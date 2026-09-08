@@ -1,12 +1,15 @@
 """
 components.py
 
-The single biggest source of duplication in the original app was the
-cascading sidebar filter block (Subject -> Topic -> Subtopic -> Year ->
-Variant -> Paper Number -> Paper Variant -> Difficulty), which was
-copy-pasted near-verbatim into app.py, quiz.py, worksheet.py and
-timed_test.py. It now lives here once, parameterized by which stages a
-given page actually needs.
+Shared UI building blocks. The filter panel is the big change here: the
+old version was a flat stack of five nested `st.expander`s in the sidebar,
+which got overwhelming fast on a filter chain this deep (Subject -> Topic
+-> Subtopic -> Year -> Variant -> Paper Number -> Paper Variant ->
+Difficulty). It's now: a keyword search box (jumps straight to matching
+topics), a single always-visible Subject selector, and everything else
+collapsed behind one `st.popover` with tabs — so the sidebar shows one
+button instead of a wall of accordions, and power users still get the full
+cascade one click away.
 """
 
 from __future__ import annotations
@@ -16,40 +19,45 @@ import streamlit as st
 import utils
 from config import FILTER_KEYS, BROWSE_RESULT_KEYS, PLAY_RESULT_KEYS, reset_keys
 from database import (
-    get_subjects,
-    get_quiz_ready_subjects,
-    get_subject_code,
-    get_distinct_values,
-    fetch_paper_details,
+    get_subjects, get_quiz_ready_subjects, get_subject_code,
+    get_distinct_values, fetch_paper_details, search_topics,
 )
 
 
 # ---------------------------------------------------------------------------
-# Filter sidebar
+# Filter panel
 # ---------------------------------------------------------------------------
 def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool = True) -> dict:
-    """Renders the full cascading filter UI in the sidebar and returns both
-    the raw selections and a ready-to-use SQL filter dict.
-
-    Returns
-    -------
-    dict with keys: subject, subject_code, topics, subtopics, years,
-    variants, paper_numbers, paper_variants, difficulties, sql_filters
-    """
     with st.sidebar:
-        st.header("🖍️ Filter Options")
+        st.header("🔍 Find Papers")
 
         if st.button("↺ Reset Filters", use_container_width=True, key="reset_filters_btn"):
             reset_keys(FILTER_KEYS, BROWSE_RESULT_KEYS, PLAY_RESULT_KEYS)
             st.rerun()
 
+        # --- Dynamic keyword search -----------------------------------
+        keyword = st.text_input(
+            "Search topics", key="keyword_search", placeholder="e.g. 'photosynthesis', 'binary trees'…",
+            label_visibility="collapsed",
+        )
+        if keyword and len(keyword.strip()) >= 2:
+            matches = search_topics(keyword)
+            if matches:
+                st.caption(f"{len(matches)} topic match(es):")
+                for m in matches[:6]:
+                    label = f"{m['subject']} · {m['topic']}"
+                    if st.button(label, key=f"search_hit_{m['subject']}_{m['topic']}_{m['sub_topic']}", use_container_width=True):
+                        st.session_state["subject_select"] = m["subject"]
+                        st.session_state["_pending_topic"] = m["topic"]
+                        st.rerun()
+            else:
+                st.caption("No topics match that search.")
+            st.divider()
+
+        # --- Primary selector (always visible) --------------------------
         subject_list = get_quiz_ready_subjects() if quiz_mode else get_subjects()
         selected_subject = st.selectbox(
-            "Subject",
-            subject_list,
-            index=None,
-            key="subject_select",
-            help="Select the subject to filter past papers.",
+            "Subject", subject_list, index=None, key="subject_select",
             placeholder="Choose a subject…",
         )
 
@@ -61,96 +69,120 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
         }
 
         if not selected_subject:
-            st.caption("👆 Pick a subject to reveal more filters.")
+            st.caption("👆 Pick a subject to unlock the rest of the filters.")
             selections["sql_filters"] = {}
             return selections
 
-        with st.expander("📂 Topic & Subtopic", expanded=False):
-            sorted_topics, unsorted_topics = utils.get_sorted_topics(selected_subject)
-            all_topics = sorted_topics + unsorted_topics
-            select_all_topics = st.checkbox("Select all topics", key="all_topics")
-            selections["topics"] = st.multiselect(
-                "Topics", all_topics,
-                default=all_topics if select_all_topics else [],
-                key="topics_multiselect",
-            )
-            if selections["topics"]:
-                subtopics, _ = utils.get_sorted_subtopics(selected_subject, selections["topics"])
-                select_all_sub = st.checkbox("Select all subtopics", key="all_subtopics")
-                selections["subtopics"] = st.multiselect(
-                    "Subtopics", subtopics,
-                    default=subtopics if select_all_sub else [],
-                    key="subtopics_multiselect",
-                )
+        # A topic jumped to from search gets pre-selected once, then cleared.
+        pending_topic = st.session_state.pop("_pending_topic", None)
 
-        with st.expander("📅 Year & Variant", expanded=False):
-            years = get_distinct_values("Year", {
-                "Subject_name": selected_subject, "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
-            })
-            select_all_years = st.checkbox("Select all years", key="all_years")
-            selections["years"] = st.multiselect(
-                "Years", sorted(years, reverse=True),
-                default=years if select_all_years else [],
-                key="years_multiselect",
-            )
-            if selections["years"]:
-                variants = get_distinct_values("Variant", {
-                    "Subject_name": selected_subject, "Year": selections["years"],
-                    "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
+        with st.popover("⚙️ Advanced Filters", use_container_width=True):
+            tab_labels = ["Topic", "Year & Variant"]
+            if include_paper_selectors:
+                tab_labels.append("Paper")
+            tab_labels.append("Difficulty")
+            tabs = st.tabs(tab_labels)
+            tab_idx = 0
+
+            with tabs[tab_idx]:
+                sorted_topics, unsorted_topics = utils.get_sorted_topics(selected_subject)
+                all_topics = sorted_topics + unsorted_topics
+                default_topics = [pending_topic] if pending_topic in all_topics else []
+                select_all_topics = st.checkbox("Select all topics", key="all_topics")
+                selections["topics"] = st.multiselect(
+                    "Topics", all_topics,
+                    default=all_topics if select_all_topics else default_topics,
+                    key="topics_multiselect",
+                )
+                if selections["topics"]:
+                    subtopics, _ = utils.get_sorted_subtopics(selected_subject, selections["topics"])
+                    select_all_sub = st.checkbox("Select all subtopics", key="all_subtopics")
+                    selections["subtopics"] = st.multiselect(
+                        "Subtopics", subtopics,
+                        default=subtopics if select_all_sub else [],
+                        key="subtopics_multiselect",
+                    )
+            tab_idx += 1
+
+            with tabs[tab_idx]:
+                years = get_distinct_values("Year", {
+                    "Subject_name": selected_subject, "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
                 })
-                select_all_variants = st.checkbox("Select all variants", key="all_variants")
-                selections["variants"] = st.multiselect(
-                    "Variants", variants,
-                    default=variants if select_all_variants else [],
-                    key="variants_multiselect",
+                select_all_years = st.checkbox("Select all years", key="all_years")
+                selections["years"] = st.multiselect(
+                    "Years", sorted(years, reverse=True),
+                    default=years if select_all_years else [],
+                    key="years_multiselect",
                 )
-
-        if include_paper_selectors:
-            with st.expander("📄 Paper Number & Variant", expanded=False):
-                if selections["variants"]:
-                    paper_numbers = get_distinct_values("Paper_number", {
+                if selections["years"]:
+                    variants = get_distinct_values("Variant", {
                         "Subject_name": selected_subject, "Year": selections["years"],
-                        "Variant": selections["variants"], "Topic": selections["topics"],
+                        "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
+                    })
+                    select_all_variants = st.checkbox("Select all variants", key="all_variants")
+                    selections["variants"] = st.multiselect(
+                        "Variants", variants,
+                        default=variants if select_all_variants else [],
+                        key="variants_multiselect",
+                    )
+            tab_idx += 1
+
+            if include_paper_selectors:
+                with tabs[tab_idx]:
+                    if selections["variants"]:
+                        paper_numbers = get_distinct_values("Paper_number", {
+                            "Subject_name": selected_subject, "Year": selections["years"],
+                            "Variant": selections["variants"], "Topic": selections["topics"],
+                            "Sub_topic": selections["subtopics"],
+                        })
+                        select_all_pn = st.checkbox("Select all paper numbers", key="all_paper_numbers")
+                        selections["paper_numbers"] = st.multiselect(
+                            "Paper Numbers", paper_numbers,
+                            default=paper_numbers if select_all_pn else [],
+                            key="paper_numbers_multiselect",
+                        )
+                        if selections["paper_numbers"]:
+                            paper_variants = get_distinct_values("Paper_variant", {
+                                "Subject_name": selected_subject, "Year": selections["years"],
+                                "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
+                                "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
+                            })
+                            select_all_pv = st.checkbox("Select all paper variants", key="all_paper_variants")
+                            selections["paper_variants"] = st.multiselect(
+                                "Paper Variants", paper_variants,
+                                default=paper_variants if select_all_pv else [],
+                                key="paper_variants_multiselect",
+                            )
+                    else:
+                        st.caption("Select a variant first.")
+                tab_idx += 1
+
+            with tabs[tab_idx]:
+                ready = selections["paper_variants"] if include_paper_selectors else selections["years"]
+                if ready:
+                    difficulties = get_distinct_values("Difficulty", {
+                        "Subject_name": selected_subject, "Year": selections["years"],
+                        "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
+                        "Paper_variant": selections["paper_variants"], "Topic": selections["topics"],
                         "Sub_topic": selections["subtopics"],
                     })
-                    select_all_pn = st.checkbox("Select all paper numbers", key="all_paper_numbers")
-                    selections["paper_numbers"] = st.multiselect(
-                        "Paper Numbers", paper_numbers,
-                        default=paper_numbers if select_all_pn else [],
-                        key="paper_numbers_multiselect",
+                    select_all_diff = st.checkbox("Select all difficulties", key="all_difficulties")
+                    selections["difficulties"] = st.multiselect(
+                        "Difficulty Levels", difficulties,
+                        default=difficulties if select_all_diff else [],
+                        key="difficulties_multiselect",
                     )
-                    if selections["paper_numbers"]:
-                        paper_variants = get_distinct_values("Paper_variant", {
-                            "Subject_name": selected_subject, "Year": selections["years"],
-                            "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
-                            "Topic": selections["topics"], "Sub_topic": selections["subtopics"],
-                        })
-                        select_all_pv = st.checkbox("Select all paper variants", key="all_paper_variants")
-                        selections["paper_variants"] = st.multiselect(
-                            "Paper Variants", paper_variants,
-                            default=paper_variants if select_all_pv else [],
-                            key="paper_variants_multiselect",
-                        )
                 else:
-                    st.caption("Select a variant above first.")
+                    st.caption("Keep narrowing the filters above first.")
 
-        with st.expander("🎚️ Difficulty", expanded=False):
-            ready = selections["paper_variants"] if include_paper_selectors else selections["years"]
-            if ready:
-                difficulties = get_distinct_values("Difficulty", {
-                    "Subject_name": selected_subject, "Year": selections["years"],
-                    "Variant": selections["variants"], "Paper_number": selections["paper_numbers"],
-                    "Paper_variant": selections["paper_variants"], "Topic": selections["topics"],
-                    "Sub_topic": selections["subtopics"],
-                })
-                select_all_diff = st.checkbox("Select all difficulties", key="all_difficulties")
-                selections["difficulties"] = st.multiselect(
-                    "Difficulty Levels", difficulties,
-                    default=difficulties if select_all_diff else [],
-                    key="difficulties_multiselect",
-                )
-            else:
-                st.caption("Keep narrowing filters above first.")
+        # Quick-glance chip summary so the collapsed popover doesn't hide state
+        chips = []
+        for label, values in [("Topics", selections["topics"]), ("Years", selections["years"]),
+                               ("Variants", selections["variants"]), ("Difficulty", selections["difficulties"])]:
+            if values:
+                chips.append(f"`{label}: {len(values)}`")
+        if chips:
+            st.caption(" ".join(chips))
 
     selections["sql_filters"] = {
         "Subject_name": selected_subject,
@@ -171,11 +203,10 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
 def render_empty_state(title: str, subtitle: str, icon: str = "🗂️") -> None:
     st.markdown(
         f"""
-        <div style="text-align:center; padding: 3rem 1rem; border: 1px dashed var(--border-color, rgba(128,128,128,.25));
-                    border-radius: 12px; margin: 1rem 0;">
+        <div class="pf-card" style="text-align:center; padding: 3rem 1rem;">
             <div style="font-size: 2.5rem;">{icon}</div>
-            <div style="font-size: 1.1rem; font-weight: 600; margin-top: .5rem;">{title}</div>
-            <div style="opacity: .7; margin-top: .25rem;">{subtitle}</div>
+            <div style="font-size: 1.15rem; font-weight: 700; margin-top: .5rem;">{title}</div>
+            <div style="color: var(--text-muted); margin-top: .25rem;">{subtitle}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -183,7 +214,7 @@ def render_empty_state(title: str, subtitle: str, icon: str = "🗂️") -> None
 
 
 # ---------------------------------------------------------------------------
-# Paper detail card (metrics + copy-paste snippet)
+# Paper detail card
 # ---------------------------------------------------------------------------
 def render_paper_detail_card(pdf_path: str | None) -> None:
     if not pdf_path:
@@ -196,10 +227,8 @@ def render_paper_detail_card(pdf_path: str | None) -> None:
     utils.add_divider(1)
     cols = st.columns(5)
     labels = [
-        ("Subject Code", details["subject_code"]),
-        ("Year", details["year"]),
-        ("Variant", details["variant"]),
-        ("Paper Variant", details["paper_variant"]),
+        ("Subject Code", details["subject_code"]), ("Year", details["year"]),
+        ("Variant", details["variant"]), ("Paper Variant", details["paper_variant"]),
         ("Question No.", details["question_number"]),
     ]
     for col, (label, value) in zip(cols, labels):
@@ -211,35 +240,59 @@ def render_paper_detail_card(pdf_path: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Results dashboard (Quiz / Timed Test)
+# Gamification widgets
 # ---------------------------------------------------------------------------
-def render_results_dashboard(correct: int, wrong: int, attempt_log: list[dict] | None = None) -> None:
-    total = correct + wrong
-    accuracy = (correct / total * 100) if total else 0.0
+def render_badge_shelf(badges: list[dict]) -> None:
+    earned = [b for b in badges if b["earned"]]
+    st.caption(f"{len(earned)}/{len(badges)} badges earned")
+    html = ['<div class="pf-badge-shelf">']
+    for b in badges:
+        cls = "pf-badge earned" if b["earned"] else "pf-badge"
+        icon = "🏅" if b["earned"] else "🔒"
+        html.append(f'<div class="{cls}" title="{b["description"]}">{icon} {b["name"]}</div>')
+    html.append("</div>")
+    st.markdown("".join(html), unsafe_allow_html=True)
 
-    st.subheader("📊 Your Results")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Correct", correct)
-    c2.metric("Incorrect", wrong)
-    c3.metric("Accuracy", f"{accuracy:.0f}%")
 
-    if total == 0:
-        render_empty_state("No attempts yet", "Answer a few questions to see your stats here.", icon="📈")
-        return
+def render_streak_indicator(streak: dict) -> None:
+    flame_class = "pf-streak-flame active" if streak["current"] > 0 else "pf-streak-flame"
+    st.markdown(
+        f"""
+        <div style="display:flex; align-items:center; gap:.6rem;">
+            <span class="{flame_class}">🔥</span>
+            <div>
+                <div style="font-weight:800; font-size:1.3rem; line-height:1;">{streak['current']} day{'s' if streak['current'] != 1 else ''}</div>
+                <div style="color:var(--text-muted); font-size:.8rem;">current streak · best {streak['longest']}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    st.progress(min(max(accuracy / 100, 0.0), 1.0))
 
-    if attempt_log:
-        by_topic: dict[str, dict[str, int]] = {}
-        for entry in attempt_log:
-            topic = entry.get("topic") or "Unspecified"
-            bucket = by_topic.setdefault(topic, {"correct": 0, "wrong": 0})
-            bucket["correct" if entry["is_correct"] else "wrong"] += 1
+# ---------------------------------------------------------------------------
+# Worksheet "cart"
+# ---------------------------------------------------------------------------
+def add_paper_to_cart(question_path: str, answer_path: str, label: str) -> bool:
+    """Returns False if the item was already in the cart (no-op), True if added."""
+    cart = st.session_state.setdefault("worksheet_cart", [])
+    if any(item["question_path"] == question_path for item in cart):
+        return False
+    cart.append({"question_path": question_path, "answer_path": answer_path, "label": label})
+    return True
 
-        if by_topic:
-            st.caption("Accuracy by topic")
-            chart_data = {
-                topic: round(stats["correct"] / (stats["correct"] + stats["wrong"]) * 100)
-                for topic, stats in by_topic.items()
-            }
-            st.bar_chart(chart_data)
+
+def render_cart_summary() -> list[dict]:
+    cart = st.session_state.get("worksheet_cart", [])
+    if not cart:
+        render_empty_state("Your worksheet cart is empty", "Browse filtered results and add questions to build a custom set.", icon="🛒")
+        return cart
+
+    st.caption(f"{len(cart)} question(s) in your cart")
+    for i, item in enumerate(cart):
+        c1, c2 = st.columns([5, 1])
+        c1.markdown(f'<div class="pf-cart-item">{item["label"]}</div>', unsafe_allow_html=True)
+        if c2.button("✕", key=f"remove_cart_{i}", help="Remove"):
+            cart.pop(i)
+            st.rerun()
+    return cart

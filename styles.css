@@ -1,17 +1,20 @@
-/* ===========================================================
-   Pastify — global stylesheet
-   Everything here reads CSS custom properties only (no hardcoded
-   hex colors) so it works identically whether theme.py has applied
-   the light or dark variable set for this session.
-=========================================================== */
+/* =========================================================================
+   Pastify — premium design system
+   Everything reads CSS custom properties (set per-session by theme.py) so
+   light/dark are never hardcoded here.
+========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@600;700;800&display=swap');
 
 :root {
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.08);
-    --transition: all 0.18s ease-in-out;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 2px var(--shadow-color, rgba(0,0,0,.06));
+    --shadow-md: 0 8px 24px -4px var(--shadow-color, rgba(0,0,0,.10));
+    --shadow-lg: 0 20px 48px -12px var(--shadow-color, rgba(0,0,0,.18));
+    --transition-fast: all 0.15s cubic-bezier(.4,0,.2,1);
+    --transition: all 0.25s cubic-bezier(.4,0,.2,1);
 }
 
 /* ===========================
@@ -22,55 +25,102 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lexend', 'Inter', sans-serif;
     color: var(--text-color);
     letter-spacing: -0.02em;
 }
 
-h1 { font-size: 2.1rem; font-weight: 800; margin-bottom: 0.3rem; }
-h2 { font-size: 1.4rem; font-weight: 700; opacity: 0.95; }
-h3 { font-size: 1.15rem; font-weight: 650; }
+h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: .35rem; }
+h2 { font-size: 1.5rem; font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 650; }
 
-p, span, label, .stMarkdown {
-    color: var(--text-color);
+p, span, label, .stMarkdown { color: var(--text-color); }
+.stCaption, small { color: var(--text-muted) !important; }
+
+/* Gradient headline utility — used on the landing hero */
+.pf-gradient-text {
+    background: linear-gradient(120deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* ===========================
    App shell
 =========================== */
 [data-testid="stSidebar"] {
-    border-right: 1px solid var(--border-color, rgba(128,128,128,.15));
+    border-right: 1px solid var(--border-color);
     background-color: var(--secondary-background-color);
 }
-
-[data-testid="stHeader"] {
-    background: transparent;
-}
-
-.block-container {
-    padding-top: 2.2rem;
-    max-width: 1100px;
-}
+[data-testid="stHeader"] { background: transparent; }
+.block-container { padding-top: 2rem; max-width: 1180px; }
 
 /* ===========================
-   Cards: containers / expanders / metrics
+   Premium cards
 =========================== */
 div[data-testid="stExpander"],
 div[data-testid="stVerticalBlockBorderWrapper"] {
     border-radius: var(--radius-md) !important;
-    border: 1px solid var(--border-color, rgba(128,128,128,.15)) !important;
+    border: 1px solid var(--border-color) !important;
     box-shadow: var(--shadow-sm);
-    background-color: var(--secondary-background-color);
+    background-color: var(--surface-color);
+    transition: var(--transition-fast);
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    box-shadow: var(--shadow-md);
 }
 
+.pf-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+.pf-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.pf-hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2.5rem;
+    color: #fff !important;
+    box-shadow: var(--shadow-lg);
+}
+.pf-hero h1, .pf-hero p, .pf-hero span { color: #fff !important; }
+.pf-hero .pf-subtle { opacity: .85; }
+
+/* Nav / launcher tiles on the landing page */
+.pf-tile {
+    display: block;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    height: 100%;
+}
+.pf-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+.pf-tile .pf-tile-icon { font-size: 2rem; margin-bottom: .5rem; }
+.pf-tile .pf-tile-title { font-weight: 700; font-size: 1.1rem; margin-bottom: .25rem; }
+.pf-tile .pf-tile-desc { color: var(--text-muted); font-size: .9rem; }
+
+/* ===========================
+   Metrics
+=========================== */
 [data-testid="stMetric"] {
-    background-color: var(--secondary-background-color);
-    padding: 1rem 1.1rem;
+    background-color: var(--surface-color);
+    padding: 1.1rem 1.2rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color, rgba(128,128,128,.12));
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
-
-[data-testid="stMetricLabel"] { opacity: 0.75; font-weight: 600; }
+[data-testid="stMetricLabel"] { opacity: .75; font-weight: 600; }
 [data-testid="stMetricValue"] { font-weight: 800; }
 
 /* ===========================
@@ -79,83 +129,102 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
 .stButton > button {
     border-radius: var(--radius-sm);
     font-weight: 600;
-    border: 1px solid var(--border-color, rgba(128,128,128,.25));
+    border: 1px solid var(--border-color);
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: var(--transition);
+    transition: var(--transition-fast);
     padding: 0.6rem 1rem;
 }
-
 .stButton > button:hover {
     border-color: var(--primary-color);
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     color: #FFFFFF;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
-
 .stButton > button:active { transform: translateY(0); }
+.stButton > button:disabled { opacity: .4; transform: none; box-shadow: none; }
 
-.stButton > button:disabled {
-    opacity: 0.45;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Primary "hero" action buttons (Generate Papers, Submit, etc.) get a
-   filled look automatically via Streamlit's type="primary" — no CSS hack
-   needed, kept here only as a fallback for older Streamlit versions. */
 button[kind="primary"] {
-    background-color: var(--primary-color) !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
     color: #FFFFFF !important;
     border: none !important;
+    box-shadow: var(--shadow-sm);
+}
+button[kind="primary"]:hover { box-shadow: var(--shadow-md); }
+
+/* Pills / segmented control */
+[data-testid="stSegmentedControl"] label {
+    border-radius: 999px !important;
 }
 
 /* ===========================
-   Inputs
+   Badges (gamification)
+=========================== */
+.pf-badge-shelf { display: flex; flex-wrap: wrap; gap: .6rem; }
+.pf-badge {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .45rem .85rem;
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    background: var(--secondary-background-color);
+    color: var(--text-muted);
+}
+.pf-badge.earned {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.pf-streak-flame {
+    font-size: 1.4rem;
+    filter: grayscale(1);
+    opacity: .4;
+}
+.pf-streak-flame.active { filter: grayscale(0); opacity: 1; }
+
+/* ===========================
+   Inputs / misc
 =========================== */
 .stTextInput input, .stNumberInput input, .stSelectbox, .stMultiSelect {
     border-radius: var(--radius-sm) !important;
 }
-
 hr {
-    border: none;
-    height: 1px;
-    background-color: var(--border-color, rgba(128,128,128,.15));
+    border: none; height: 1px;
+    background-color: var(--border-color);
     margin: 1.4rem 0;
 }
-
-/* ===========================
-   Progress + misc
-=========================== */
 .stProgress > div > div {
-    background-color: var(--primary-color) !important;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color)) !important;
     border-radius: 999px;
 }
 
 .footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 50px;
-    border-top: 1px solid var(--border-color, rgba(128,128,128,.2));
-    font-size: 0.85rem;
-    color: var(--text-color);
-    opacity: 0.7;
+    text-align: center; padding: 20px; margin-top: 50px;
+    border-top: 1px solid var(--border-color);
+    font-size: .85rem; color: var(--text-muted);
 }
-.footer a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
-}
+.footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
 .footer a:hover { text-decoration: underline; }
 
-.hero-spacer { margin-top: 8vh; }
+.hero-spacer { margin-top: 4vh; }
 
-/* Simple fade-in for freshly rendered content (question/answer swaps etc.) */
-[data-testid="stImage"] {
-    animation: fadeIn 0.25s ease-in;
-}
-@keyframes fadeIn {
+[data-testid="stImage"] { animation: pfFadeIn .25s ease-in; }
+@keyframes pfFadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cart line item (Worksheet Builder) */
+.pf-cart-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .6rem .9rem;
+    border-radius: var(--radius-sm);
+    background: var(--secondary-background-color);
+    border: 1px solid var(--border-color);
+    margin-bottom: .4rem;
+    font-size: .9rem;
 }

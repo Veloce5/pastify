@@ -4,12 +4,14 @@ import streamlit as st
 
 import theme
 from config import LOGO_PATH
+from profile import render_profile_badge
 
 
 def render():
     theme.apply_page_theme()
     with st.sidebar:
         theme.theme_toggle()
+    render_profile_badge()
 
     st.title("About Us")
     st.write("Meet the minds behind Pastify.")
@@ -22,15 +24,16 @@ def render():
 
     for col, (name, role) in zip((col1, col2), team):
         with col:
-            st.header(name)
-            if LOGO_PATH.exists():
-                st.image(str(LOGO_PATH), width=300)
-            st.subheader(f"Role: {role}")
-            st.write(
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
-                "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, "
-                "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-            )
+            with st.container(border=True):
+                st.header(name)
+                if LOGO_PATH.exists():
+                    st.image(str(LOGO_PATH), width=300)
+                st.subheader(f"Role: {role}")
+                st.write(
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
+                    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, "
+                    "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                )
 
     st.markdown("---")
     st.subheader("Our Mission")

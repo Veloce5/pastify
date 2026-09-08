@@ -1,13 +1,11 @@
 """
-database.py  (replaces filter_logic.py)
+database.py
 
-Every read is wrapped in st.cache_data so re-rendering a page (which happens
-on every widget interaction in Streamlit) doesn't re-hit SQLite for data
-that hasn't changed. The connection itself is a single cached resource
-shared across the whole app session.
-
-The eight near-identical `get_X` functions from the original filter_logic.py
-have been collapsed into one generic, parameterized `get_distinct_values`.
+Cached, indexed, generic query layer over past_papers.db. Every read goes
+through st.cache_data so re-rendering a page (which Streamlit does on
+almost every widget interaction) never re-hits SQLite for data that hasn't
+changed. The connection is a single cached resource for the whole app
+session, and has its indexes bootstrapped exactly once (see config.ensure_indexes).
 """
 
 from __future__ import annotations
@@ -16,7 +14,7 @@ import sqlite3
 
 import streamlit as st
 
-from config import DB_PATH, resolve_media_path
+from config import DB_PATH, ensure_indexes, resolve_media_path
 
 
 # ---------------------------------------------------------------------------
@@ -24,9 +22,9 @@ from config import DB_PATH, resolve_media_path
 # ---------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
 def get_connection() -> sqlite3.Connection:
-    """A single shared, cached SQLite connection for the app's lifetime."""
     conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
-    conn.execute("PRAGMA query_only = ON;")  # this app never writes to the DB
+    ensure_indexes(conn)  # no-op after the first run — CREATE INDEX IF NOT EXISTS
+    conn.execute("PRAGMA query_only = ON;")  # this app never writes to past_papers.db
     return conn
 
 
@@ -34,61 +32,42 @@ def get_connection() -> sqlite3.Connection:
 # Generic cached query helpers
 # ---------------------------------------------------------------------------
 def _normalize(filters: dict | None) -> dict:
-    """Drop empty filter values so cache keys stay stable and queries stay lean."""
     if not filters:
         return {}
     return {k: v for k, v in filters.items() if v}
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
-def get_distinct_values(column: str, filters: dict | None = None) -> list:
-    """Distinct values for `column`, restricted by an optional filter dict.
-
-    filters: {"Subject_name": "Physics", "Year": [2022, 2023], ...}
-    A list value becomes a SQL IN(...) clause; a scalar becomes `= ?`.
-    """
-    filters = _normalize(filters)
-    conn = get_connection()
-
-    query = f"SELECT DISTINCT {column} FROM past_papers WHERE Question IS NOT NULL"
-    params: list = []
-
+def _where_clause(filters: dict) -> tuple[str, list]:
+    clauses, params = [], []
     for key, value in filters.items():
         if isinstance(value, (list, tuple, set)):
             values = list(value)
-            query += f" AND {key} IN ({','.join(['?'] * len(values))})"
+            clauses.append(f"{key} IN ({','.join(['?'] * len(values))})")
             params.extend(values)
         else:
-            query += f" AND {key} = ?"
+            clauses.append(f"{key} = ?")
             params.append(value)
+    return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
-    rows = conn.execute(query, params).fetchall()
-    return [r[0] for r in rows]
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def get_distinct_values(column: str, filters: dict | None = None) -> list:
+    filters = _normalize(filters)
+    conn = get_connection()
+    where, params = _where_clause(filters)
+    query = f"SELECT DISTINCT {column} FROM past_papers WHERE Question IS NOT NULL{where}"
+    return [r[0] for r in conn.execute(query, params).fetchall()]
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def filter_papers(filters: dict, limit: int | None = None) -> list[tuple]:
-    """Full-row query for the given filters. Optionally randomized + limited
-    (used by Quiz / Timed Test which want a random subset)."""
     filters = _normalize(filters)
     conn = get_connection()
-
-    query = "SELECT * FROM past_papers WHERE Question IS NOT NULL"
-    params: list = []
-
-    for key, value in filters.items():
-        if isinstance(value, (list, tuple, set)):
-            values = list(value)
-            query += f" AND {key} IN ({','.join(['?'] * len(values))})"
-            params.extend(values)
-        else:
-            query += f" AND {key} = ?"
-            params.append(value)
-
+    where, params = _where_clause(filters)
+    query = f"SELECT * FROM past_papers WHERE Question IS NOT NULL{where}"
     if limit:
         query += " ORDER BY RANDOM() LIMIT ?"
         params.append(limit)
-
     return conn.execute(query, params).fetchall()
 
 
@@ -99,8 +78,6 @@ def get_subjects() -> list:
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def get_quiz_ready_subjects() -> list:
-    """Subjects that have single-question papers with a letter answer (A-D) —
-    i.e. subjects that are playable in Quiz Mode / Timed Test."""
     conn = get_connection()
     rows = conn.execute(
         """
@@ -115,21 +92,16 @@ def get_quiz_ready_subjects() -> list:
 def get_subject_code(subject: str) -> str | None:
     conn = get_connection()
     row = conn.execute(
-        "SELECT Subject_code FROM past_papers WHERE Subject_name = ? LIMIT 1",
-        (subject,),
+        "SELECT Subject_code FROM past_papers WHERE Subject_name = ? LIMIT 1", (subject,)
     ).fetchone()
     return row[0] if row else None
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def fetch_paper_details(file_path: str) -> dict | None:
-    """`file_path` is the DB-stored relative path (e.g.
-    'qp/9618/2024/May_June/12/1(a).pdf') — it's used here purely as a
-    lookup key, matching what's now stored in the Question column post
-    clean_db.py. It is NOT resolved to a filesystem path in this function;
-    that only happens at the point of actually reading the PDF bytes (see
-    utils.get_pdf_page_images / utils.merge_pdfs), via
-    config.resolve_media_path()."""
+    """`file_path` is the DB-stored relative path — used purely as a lookup
+    key. Resolution to an actual filesystem path only happens in utils.py,
+    right before a PDF is read."""
     conn = get_connection()
     row = conn.execute(
         """
@@ -144,25 +116,8 @@ def fetch_paper_details(file_path: str) -> dict | None:
     return dict(zip(keys, row))
 
 
-def resolve_path(relative_path: str | None):
-    """Thin re-export of config.resolve_media_path so callers that are
-    already importing `database` for everything else don't need a second
-    import just for path resolution."""
-    return resolve_media_path(relative_path)
-
-
-def media_exists(relative_path: str | None) -> bool:
-    """True if the relative path stored in the DB actually resolves to a
-    real file on this machine. Use this before ever handing a path to
-    fitz/PdfMerger — replaces any old os.path.exists() call on a raw,
-    possibly-absolute-Windows-style string."""
-    resolved = resolve_media_path(relative_path)
-    return resolved is not None and resolved.exists()
-
-
 @st.cache_data(show_spinner=False, ttl=3600)
 def get_sorted_topics(subject: str) -> tuple[list, list]:
-    """Split topics into ('Chpt - N - Name' style, sorted by N) and the rest."""
     topics = get_distinct_values("Topic", {"Subject_name": subject})
     sorted_topics, unsorted_topics = [], []
     for topic in topics:
@@ -177,3 +132,42 @@ def get_sorted_topics(subject: str) -> tuple[list, list]:
         unsorted_topics.append(topic)
     sorted_topics.sort(key=lambda t: int(t.split(" - ")[1]))
     return sorted_topics, sorted(unsorted_topics)
+
+
+# ---------------------------------------------------------------------------
+# Dynamic keyword search — Topic / Sub_topic
+# ---------------------------------------------------------------------------
+@st.cache_data(show_spinner=False, ttl=600)
+def search_topics(keyword: str, subject: str | None = None, limit: int = 50) -> list[dict]:
+    """Free-text search across Topic and Sub_topic. Returns distinct
+    (Subject_name, Topic, Sub_topic) triples matching the keyword, so the
+    UI can offer "jump straight to this topic" results instead of forcing
+    the user through the full cascade."""
+    keyword = (keyword or "").strip()
+    if len(keyword) < 2:
+        return []
+
+    conn = get_connection()
+    like = f"%{keyword}%"
+    query = """
+        SELECT DISTINCT Subject_name, Topic, Sub_topic FROM past_papers
+        WHERE (Topic LIKE ? OR Sub_topic LIKE ?) AND Question IS NOT NULL
+    """
+    params: list = [like, like]
+    if subject:
+        query += " AND Subject_name = ?"
+        params.append(subject)
+    query += " LIMIT ?"
+    params.append(limit)
+
+    rows = conn.execute(query, params).fetchall()
+    return [{"subject": r[0], "topic": r[1], "sub_topic": r[2]} for r in rows]
+
+
+def media_exists(relative_path: str | None) -> bool:
+    resolved = resolve_media_path(relative_path)
+    return resolved is not None and resolved.exists()
+
+
+def resolve_path(relative_path: str | None):
+    return resolve_media_path(relative_path)

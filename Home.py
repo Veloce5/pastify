@@ -1,20 +1,24 @@
 """
-Home.py (replaces home.py)
+Home.py
 
-The original app hand-rolled page routing with a `session_state["current_page"]`
-string and a big if/elif chain, plus a manually duplicated "Back to Home"
-sidebar block on every branch. This uses Streamlit's native multipage
-router (`st.navigation` + `st.Page`), which gives proper URLs per page,
-a built-in nav sidebar, and removes ~40 lines of bespoke routing logic.
+Entry point. Uses Streamlit's native multipage router (st.navigation +
+st.Page) instead of hand-rolled session_state routing. The profile prompt
+(profile.get_profile) runs here, before any page, so every page can assume
+a profile name already exists in session_state.
 """
 
 import streamlit as st
 
+from profile import get_profile
+
 st.set_page_config(
-    page_title="Pastify — Past Paper Filter Tool",
+    page_title="Pastify — Past Paper Platform",
     page_icon="📚",
-    layout="centered",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
+
+get_profile()  # shows the welcome dialog once per session if needed
 
 pages = [
     st.Page("pages_src/landing.py", title="Home", icon="🏠", default=True),
@@ -22,8 +26,9 @@ pages = [
     st.Page("pages_src/worksheet.py", title="Worksheet Builder", icon="📝"),
     st.Page("pages_src/quiz.py", title="Quiz Mode", icon="🎮"),
     st.Page("pages_src/timed_test.py", title="Timed Test", icon="⏱️"),
+    st.Page("pages_src/my_progress.py", title="My Progress", icon="📈"),
     st.Page("pages_src/about.py", title="About Us", icon="👥"),
 ]
 
-pg = st.navigation(pages)  # default "sidebar" position: a clean nav menu above every page's filters
+pg = st.navigation(pages)
 pg.run()
