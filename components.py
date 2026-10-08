@@ -38,7 +38,7 @@ def _render_keyword_search() -> None:
             st.caption(f"{len(matches)} topic match(es):")
             for m in matches[:6]:
                 label = f"{m['subject']} · {m['topic']}"
-                if st.button(label, key=f"search_hit_{m['subject']}_{m['topic']}_{m['sub_topic']}", use_container_width=True):
+                if st.button(label, key=f"search_hit_{m['subject']}_{m['topic']}_{m['sub_topic']}", width="stretch"):
                     st.session_state["subject_select"] = m["subject"]
                     st.session_state["_pending_topic"] = m["topic"]
                     st.rerun()
@@ -160,7 +160,7 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
     with st.sidebar:
         st.header("🔍 Find Papers")
 
-        if st.button("↺ Reset Filters", use_container_width=True, key="reset_filters_btn"):
+        if st.button("↺ Reset Filters", width="stretch", key="reset_filters_btn"):
             reset_keys(FILTER_KEYS, BROWSE_RESULT_KEYS, PLAY_RESULT_KEYS)
             st.rerun()
 
@@ -188,7 +188,7 @@ def render_filter_sidebar(quiz_mode: bool = False, include_paper_selectors: bool
         # A topic jumped to from search gets pre-selected once, then cleared.
         pending_topic = st.session_state.pop("_pending_topic", None)
 
-        with st.popover("⚙️ Advanced Filters", use_container_width=True):
+        with st.popover("⚙️ Advanced Filters", width="stretch"):
             tab_labels = ["Topic", "Year & Variant"]
             if include_paper_selectors:
                 tab_labels.append("Paper")

@@ -55,10 +55,10 @@ def render_pdf(relative_path: str | None, empty_message: str = "This file couldn
         cols = st.columns(len(images))
         for i, image_bytes in enumerate(images):
             with cols[i]:
-                st.image(image_bytes, caption=f"Page {i + 1}", use_container_width=True)
+                st.image(image_bytes, caption=f"Page {i + 1}", width="stretch")
     else:
         for i, image_bytes in enumerate(images):
-            st.image(image_bytes, caption=f"Page {i + 1}", use_container_width=True)
+            st.image(image_bytes, caption=f"Page {i + 1}", width="stretch")
 
 
 # ---------------------------------------------------------------------------

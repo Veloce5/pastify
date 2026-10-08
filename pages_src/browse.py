@@ -60,7 +60,7 @@ def render():
         top_l, top_r = st.columns([3, 1])
         top_l.caption(f"Paper {idx + 1} of {total}")
         with top_r:
-            if st.button("🛒 Add to cart", use_container_width=True, key="add_to_cart_browse"):
+            if st.button("🛒 Add to cart", width="stretch", key="add_to_cart_browse"):
                 added = add_paper_to_cart(q_path, a_path, label=f"Question {idx + 1}")
                 st.toast("Added to worksheet cart!" if added else "Already in your cart.", icon="🛒")
 
@@ -68,7 +68,7 @@ def render():
         with mid:
             if st.button(
                 "🙈 Show Answer" if show_q else "📖 Show Question",
-                use_container_width=True, key="show_answer_button",
+                width="stretch", key="show_answer_button",
             ):
                 st.session_state.show_question = not show_q
                 st.rerun()
@@ -78,12 +78,12 @@ def render():
 
         nav1, _, nav3 = st.columns([1, 3, 1])
         with nav1:
-            if st.button("⬅ Previous", use_container_width=True, disabled=idx == 0, key="previous_button"):
+            if st.button("⬅ Previous", width="stretch", disabled=idx == 0, key="previous_button"):
                 st.session_state.current_index -= 1
                 st.session_state.show_question = True
                 st.rerun()
         with nav3:
-            if st.button("Next ➡", use_container_width=True, disabled=idx >= total - 1, key="next_button"):
+            if st.button("Next ➡", width="stretch", disabled=idx >= total - 1, key="next_button"):
                 st.session_state.current_index += 1
                 st.session_state.show_question = True
                 st.rerun()

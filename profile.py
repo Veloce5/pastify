@@ -37,11 +37,11 @@ def _prompt_for_profile():
     name = st.text_input("Display name", placeholder="e.g. Alex", key="profile_name_input")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Continue", type="primary", use_container_width=True, disabled=not name.strip()):
+        if st.button("Continue", type="primary", width="stretch", disabled=not name.strip()):
             st.session_state.student_name = name.strip()
             st.rerun()
     with col2:
-        if st.button("Continue as Guest", use_container_width=True):
+        if st.button("Continue as Guest", width="stretch"):
             st.session_state.student_name = "Guest"
             st.rerun()
 
