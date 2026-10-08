@@ -103,7 +103,7 @@ def reset_keys(*key_groups) -> None:
 # ---------------------------------------------------------------------------
 # Misc settings
 # ---------------------------------------------------------------------------
-PDF_RENDER_ZOOM = 2.0
+PDF_RENDER_ZOOM = 1.5
 
 # Gamification thresholds
 BADGE_ACCURACY_THRESHOLDS = {"Sharp Shooter": 0.90, "Reliable": 0.75}
