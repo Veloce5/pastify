@@ -253,7 +253,7 @@ def render_empty_state(title: str, subtitle: str, icon: str = "🗂️") -> None
         <div class="pf-card" style="text-align:center; padding: 3rem 1rem;">
             <div style="font-size: 2.5rem;">{icon}</div>
             <div style="font-size: 1.15rem; font-weight: 700; margin-top: .5rem;">{title}</div>
-            <div style="color: var(--text-muted); margin-top: .25rem;">{subtitle}</div>
+            <div style="color: var(--pf-text-muted); margin-top: .25rem;">{subtitle}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -309,7 +309,7 @@ def render_streak_indicator(streak: dict) -> None:
             <span class="{flame_class}">🔥</span>
             <div>
                 <div style="font-weight:800; font-size:1.3rem; line-height:1;">{streak['current']} day{'s' if streak['current'] != 1 else ''}</div>
-                <div style="color:var(--text-muted); font-size:.8rem;">current streak · best {streak['longest']}</div>
+                <div style="color:var(--pf-text-muted); font-size:.8rem;">current streak · best {streak['longest']}</div>
             </div>
         </div>
         """,
