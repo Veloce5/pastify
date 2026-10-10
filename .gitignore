@@ -30,3 +30,10 @@ Thumbs.db
 .streamlit/secrets.toml
 progress.db
 github_release_archives/
+
+# MCQ Splitter - generated outputs and development backups
+mcq_*test*/
+mcq_full_test_*/
+mcq_*_report.csv
+mcq_*_audit.txt
+mcq_splitter_v*_backup.py
