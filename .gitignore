@@ -3,7 +3,6 @@
 # ==========================================
 
 # 1. Data & Media (NEVER track these due to size and privacy)
-past_papers*.db
 output_questions/
 split_papers.log
 *.bak_*
@@ -20,6 +19,7 @@ env/
 # 3. OS Generated Files (Mac/Windows junk)
 .DS_Store
 .DS_Store?
+.DS_Store
 ._*
 .Spotlight-V100
 .Trashes
@@ -29,3 +29,11 @@ Thumbs.db
 # 4. Streamlit specific
 .streamlit/secrets.toml
 progress.db
+github_release_archives/
+
+# MCQ Splitter - generated outputs and development backups
+mcq_*test*/
+mcq_full_test_*/
+mcq_*_report.csv
+mcq_*_audit.txt
+mcq_splitter_v*_backup.py

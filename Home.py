@@ -18,6 +18,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from theme import sync_native_theme
+sync_native_theme()
+
+
+
 get_profile()  # shows the welcome dialog once per session if needed
 
 pages = [

@@ -1,230 +1,543 @@
-/* =========================================================================
-   Pastify — premium design system
-   Everything reads CSS custom properties (set per-session by theme.py) so
-   light/dark are never hardcoded here.
-========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@600;700;800&display=swap');
+/* ==========================================================
+   PASTIFY DESIGN SYSTEM
+   Warm Ivory (light) / Midnight Neon (dark)
+   Theme variables are supplied per session by theme.py.
+   ========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@500;600;700;800&display=swap');
 
 :root {
-    --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --shadow-sm: 0 1px 2px var(--shadow-color, rgba(0,0,0,.06));
-    --shadow-md: 0 8px 24px -4px var(--shadow-color, rgba(0,0,0,.10));
-    --shadow-lg: 0 20px 48px -12px var(--shadow-color, rgba(0,0,0,.18));
-    --transition-fast: all 0.15s cubic-bezier(.4,0,.2,1);
-    --transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    --radius-sm: 9px;
+    --radius-md: 15px;
+    --radius-lg: 22px;
+    --shadow-sm: 0 2px 8px var(--pf-shadow-color);
+    --shadow-md: 0 10px 28px var(--pf-shadow-color);
+    --shadow-lg: 0 18px 44px var(--pf-shadow-color);
+    --transition-fast: 150ms ease;
+    --transition: 220ms ease;
 }
 
-/* ===========================
-   Typography
-=========================== */
-html, body, [data-testid="stAppViewContainer"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/* ==========================================================
+   APP FOUNDATION
+   ========================================================== */
+
+html,
+body,
+.stApp,
+[data-testid="stAppViewContainer"] {
+    font-family: 'Inter', sans-serif;
+    color: var(--pf-text-color);
+}
+
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"] {
+    background-color: var(--pf-background-color);
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+.block-container {
+    max-width: 1200px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Lexend', 'Inter', sans-serif;
-    color: var(--text-color);
-    letter-spacing: -0.02em;
+    color: var(--pf-text-color);
+    letter-spacing: -0.035em;
 }
 
-h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: .35rem; }
-h2 { font-size: 1.5rem; font-weight: 700; }
-h3 { font-size: 1.2rem; font-weight: 650; }
-
-p, span, label, .stMarkdown { color: var(--text-color); }
-.stCaption, small { color: var(--text-muted) !important; }
-
-/* Gradient headline utility — used on the landing hero */
-.pf-gradient-text {
-    background: linear-gradient(120deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+h1 {
+    font-size: clamp(2rem, 3.2vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.2;
 }
 
-/* ===========================
-   App shell
-=========================== */
+h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+}
+
+h3 {
+    font-size: 1.2rem;
+    font-weight: 650;
+}
+
+p,
+.stMarkdown,
+.stMarkdown p {
+    color: var(--pf-text-color);
+}
+
+.stCaption,
+[data-testid="stCaptionContainer"],
+small {
+    color: var(--pf-text-muted) !important;
+}
+
+a {
+    color: var(--pf-primary-color);
+}
+
+::selection {
+    background: var(--pf-glow-color);
+}
+
+/* ==========================================================
+   SIDEBAR & NAVIGATION
+   ========================================================== */
+
 [data-testid="stSidebar"] {
-    border-right: 1px solid var(--border-color);
-    background-color: var(--secondary-background-color);
+    background: var(--pf-secondary-background-color);
+    border-right: 1px solid var(--pf-border-color);
 }
-[data-testid="stHeader"] { background: transparent; }
-.block-container { padding-top: 2rem; max-width: 1180px; }
 
-/* ===========================
-   Premium cards
-=========================== */
+[data-testid="stSidebar"] > div {
+    background: transparent;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+    color: var(--pf-text-color);
+}
+
+[data-testid="stSidebarNav"] a {
+    border-radius: var(--radius-sm);
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+[data-testid="stSidebarNav"] a:hover {
+    background: var(--pf-glow-color);
+}
+
+[data-testid="stSidebar"] hr {
+    border-color: var(--pf-border-color);
+}
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.pf-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(2rem, 5vw, 3.5rem);
+    border-radius: var(--radius-lg);
+    background:
+        radial-gradient(
+            ellipse at 95% 0%,
+            var(--pf-glow-color),
+            transparent 55%
+        ),
+        linear-gradient(
+            135deg,
+            var(--pf-surface-color),
+            var(--pf-secondary-background-color)
+        );
+    border: 1px solid var(--pf-border-color);
+    box-shadow: var(--shadow-md);
+}
+
+.pf-hero::before {
+    content: "";
+    position: absolute;
+    top: -75px;
+    right: -75px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 1px solid var(--pf-primary-color);
+    opacity: 0.18;
+    pointer-events: none;
+}
+
+.pf-hero::after {
+    content: "";
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 1px solid var(--pf-accent-color);
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.pf-hero h1 {
+    position: relative;
+    z-index: 1;
+    max-width: 850px;
+    margin-top: 0.6rem;
+    margin-bottom: 1rem;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.17;
+    color: var(--pf-text-color);
+}
+
+.pf-hero p,
+.pf-hero span,
+.pf-hero div {
+    position: relative;
+    z-index: 1;
+    color: var(--pf-text-color);
+}
+
+.pf-hero .pf-subtle {
+    max-width: 620px;
+    color: var(--pf-text-muted);
+    line-height: 1.8;
+}
+
+.pf-gradient-text {
+    background: linear-gradient(
+        110deg,
+        var(--pf-primary-color),
+        var(--pf-accent-color)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================================
+   CARDS, CONTAINERS & EXPANDERS
+   ========================================================== */
+
+.pf-card,
+.pf-tile,
+[data-testid="stMetric"],
 div[data-testid="stExpander"],
 div[data-testid="stVerticalBlockBorderWrapper"] {
-    border-radius: var(--radius-md) !important;
-    border: 1px solid var(--border-color) !important;
+    background: var(--pf-surface-color);
+    border: 1px solid var(--pf-border-color);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    background-color: var(--surface-color);
-    transition: var(--transition-fast);
-}
-div[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    box-shadow: var(--shadow-md);
 }
 
 .pf-card {
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
     padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-}
-.pf-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-.pf-hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
     border-radius: var(--radius-lg);
-    padding: 3rem 2.5rem;
-    color: #fff !important;
-    box-shadow: var(--shadow-lg);
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        transform var(--transition);
 }
-.pf-hero h1, .pf-hero p, .pf-hero span { color: #fff !important; }
-.pf-hero .pf-subtle { opacity: .85; }
 
-/* Nav / launcher tiles on the landing page */
+.pf-card:hover {
+    border-color: var(--pf-primary-color);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+div[data-testid="stExpander"],
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: var(--radius-md) !important;
+    border-color: var(--pf-border-color) !important;
+    background-color: var(--pf-surface-color);
+}
+
+/* ==========================================================
+   HOMEPAGE NAVIGATION TILES
+   ========================================================== */
+
 .pf-tile {
-    display: block;
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    border: 1px solid var(--border-color);
-    background: var(--surface-color);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
     height: 100%;
+    min-height: 180px;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    transition:
+        transform var(--transition),
+        border-color var(--transition),
+        box-shadow var(--transition);
 }
+
 .pf-tile:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
-}
-.pf-tile .pf-tile-icon { font-size: 2rem; margin-bottom: .5rem; }
-.pf-tile .pf-tile-title { font-weight: 700; font-size: 1.1rem; margin-bottom: .25rem; }
-.pf-tile .pf-tile-desc { color: var(--text-muted); font-size: .9rem; }
-
-/* ===========================
-   Metrics
-=========================== */
-[data-testid="stMetric"] {
-    background-color: var(--surface-color);
-    padding: 1.1rem 1.2rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-}
-[data-testid="stMetricLabel"] { opacity: .75; font-weight: 600; }
-[data-testid="stMetricValue"] { font-weight: 800; }
-
-/* ===========================
-   Buttons
-=========================== */
-.stButton > button {
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    border: 1px solid var(--border-color);
-    background-color: var(--background-color);
-    color: var(--text-color);
-    transition: var(--transition-fast);
-    padding: 0.6rem 1rem;
-}
-.stButton > button:hover {
-    border-color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #FFFFFF;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    border-color: var(--pf-primary-color);
     box-shadow: var(--shadow-md);
 }
-.stButton > button:active { transform: translateY(0); }
-.stButton > button:disabled { opacity: .4; transform: none; box-shadow: none; }
 
-button[kind="primary"] {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
-    color: #FFFFFF !important;
-    border: none !important;
-    box-shadow: var(--shadow-sm);
+.pf-tile-icon {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
 }
-button[kind="primary"]:hover { box-shadow: var(--shadow-md); }
 
-/* Pills / segmented control */
+.pf-tile-title {
+    font-family: 'Lexend', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--pf-text-color);
+    margin-bottom: 0.5rem;
+}
+
+.pf-tile-desc {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--pf-text-muted);
+}
+
+/* ==========================================================
+   METRICS
+   ========================================================== */
+
+[data-testid="stMetric"] {
+    padding: 1.2rem;
+}
+
+[data-testid="stMetricLabel"] {
+    font-weight: 600;
+    color: var(--pf-text-muted);
+}
+
+[data-testid="stMetricValue"] {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 800;
+    color: var(--pf-text-color);
+}
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.stButton > button,
+.stDownloadButton > button {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--pf-border-color);
+    background: var(--pf-surface-color);
+    color: var(--pf-text-color);
+    font-weight: 600;
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    border-color: var(--pf-primary-color);
+    background: var(--pf-glow-color);
+    color: var(--pf-primary-color);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.stButton > button:active,
+.stDownloadButton > button:active {
+    transform: translateY(0);
+}
+
+.stButton > button:disabled,
+.stDownloadButton > button:disabled {
+    opacity: 0.45;
+    transform: none;
+    box-shadow: none;
+}
+
+.stButton > button[kind="primary"],
+.stDownloadButton > button[kind="primary"] {
+    background: var(--pf-primary-color) !important;
+    border-color: var(--pf-primary-color) !important;
+    color: var(--pf-on-primary-color) !important;
+}
+
+.stButton > button[kind="primary"]:hover,
+.stDownloadButton > button[kind="primary"]:hover {
+    box-shadow: 0 0 16px var(--pf-glow-color);
+    filter: brightness(1.06);
+}
+
+/* ==========================================================
+   INPUTS & CONTROLS
+   ========================================================== */
+
+.stTextInput input,
+.stNumberInput input,
+.stTextArea textarea {
+    border-radius: var(--radius-sm);
+    color: var(--pf-text-color);
+}
+
+.stTextInput input:focus,
+.stNumberInput input:focus,
+.stTextArea textarea:focus {
+    border-color: var(--pf-primary-color);
+    box-shadow: 0 0 0 2px var(--pf-glow-color);
+}
+
+[data-testid="stSelectbox"],
+[data-testid="stMultiSelect"],
+[data-testid="stSegmentedControl"] {
+    border-radius: var(--radius-sm);
+}
+
 [data-testid="stSegmentedControl"] label {
     border-radius: 999px !important;
 }
 
-/* ===========================
-   Badges (gamification)
-=========================== */
-.pf-badge-shelf { display: flex; flex-wrap: wrap; gap: .6rem; }
-.pf-badge {
-    display: flex; align-items: center; gap: .4rem;
-    padding: .45rem .85rem;
+[data-testid="stProgress"] > div > div,
+.stProgress > div > div {
+    background: var(--pf-primary-color) !important;
     border-radius: 999px;
-    font-size: .82rem;
-    font-weight: 600;
-    border: 1px solid var(--border-color);
-    background: var(--secondary-background-color);
-    color: var(--text-muted);
 }
+
+/* ==========================================================
+   BADGES & GAMIFICATION
+   ========================================================== */
+
+.pf-badge-shelf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.pf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    background: var(--pf-secondary-background-color);
+    color: var(--pf-text-muted);
+    border: 1px solid var(--pf-border-color);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
 .pf-badge.earned {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    border: none;
-    box-shadow: var(--shadow-sm);
+    background: var(--pf-glow-color);
+    color: var(--pf-primary-color);
+    border-color: var(--pf-primary-color);
+    box-shadow: 0 0 12px var(--pf-glow-color);
 }
 
 .pf-streak-flame {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     filter: grayscale(1);
-    opacity: .4;
+    opacity: 0.4;
 }
-.pf-streak-flame.active { filter: grayscale(0); opacity: 1; }
 
-/* ===========================
-   Inputs / misc
-=========================== */
-.stTextInput input, .stNumberInput input, .stSelectbox, .stMultiSelect {
-    border-radius: var(--radius-sm) !important;
+.pf-streak-flame.active {
+    filter: grayscale(0);
+    opacity: 1;
 }
+
+/* ==========================================================
+   WORKSHEET CART
+   ========================================================== */
+
+.pf-cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.45rem;
+    border-radius: var(--radius-sm);
+    background: var(--pf-secondary-background-color);
+    border: 1px solid var(--pf-border-color);
+    color: var(--pf-text-color);
+    font-size: 0.9rem;
+}
+
+/* ==========================================================
+   DIVIDERS & FOOTER
+   ========================================================== */
+
 hr {
-    border: none; height: 1px;
-    background-color: var(--border-color);
-    margin: 1.4rem 0;
-}
-.stProgress > div > div {
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color)) !important;
-    border-radius: 999px;
+    border: none;
+    height: 1px;
+    background: var(--pf-border-color);
+    margin: 1.5rem 0;
 }
 
 .footer {
-    text-align: center; padding: 20px; margin-top: 50px;
-    border-top: 1px solid var(--border-color);
-    font-size: .85rem; color: var(--text-muted);
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--pf-border-color);
+    font-size: 0.85rem;
+    color: var(--pf-text-muted);
 }
-.footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
-.footer a:hover { text-decoration: underline; }
 
-.hero-spacer { margin-top: 4vh; }
+.footer p {
+    color: var(--pf-text-muted);
+}
 
-[data-testid="stImage"] { animation: pfFadeIn .25s ease-in; }
+.footer a {
+    color: var(--pf-primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.hero-spacer {
+    margin-top: 4vh;
+}
+
+/* ==========================================================
+   SUBTLE IMAGE ENTRANCE
+   ========================================================== */
+
+[data-testid="stImage"] {
+    animation: pfFadeIn 250ms ease-out;
+}
+
 @keyframes pfFadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Cart line item (Worksheet Builder) */
-.pf-cart-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: .6rem .9rem;
-    border-radius: var(--radius-sm);
-    background: var(--secondary-background-color);
-    border: 1px solid var(--border-color);
-    margin-bottom: .4rem;
-    font-size: .9rem;
+/* ==========================================================
+   RESPONSIVE DESIGN
+   ========================================================== */
+
+@media (max-width: 768px) {
+    .block-container {
+        padding-top: 1.2rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .pf-hero {
+        padding: 1.8rem 1.4rem;
+    }
+
+    .pf-hero h1 {
+        font-size: 1.9rem;
+    }
+
+    .pf-hero::before,
+    .pf-hero::after {
+        display: none;
+    }
+
+    .pf-tile {
+        min-height: 140px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
