@@ -528,3 +528,59 @@ Pastify was built around a simple idea:
 **Past papers are one of the most valuable resources available to A-Level students — they should be easier to search, practice, and learn from.**
 
 By combining structured question data, intelligent filtering, interactive practice, PDF processing, analytics, and gamification, Pastify turns a collection of static examination papers into a more usable learning platform.
+
+---
+
+# 🧩 MCQ Question Splitter
+
+Pastify includes a standalone Python utility for splitting Cambridge multiple-choice question papers into individual question PDFs.
+
+## Supported Subjects
+
+| Subject Code | Subject | Questions per Paper |
+|---|---|---:|
+| 9702 | Physics | 40 |
+| 9706 | Accounting | 30 |
+| 9708 | Economics | 30 |
+
+## Requirements
+
+- Python 3
+- Dependencies listed in `requirements.txt`
+- PyMuPDF, which is used to process PDFs
+
+Install the project dependencies from the repository root:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+## Usage
+
+### Split a single PDF
+
+```bash
+python3 mcq_splitter.py \
+  --input "/path/to/question_paper.pdf" \
+  --output "./split_questions"
+```
+
+### Split a directory of PDFs
+
+```bash
+python3 mcq_splitter.py \
+  --input "/path/to/question_papers" \
+  --output "./split_questions"
+```
+
+### View command-line options
+
+```bash
+python3 mcq_splitter.py --help
+```
+
+The input can be a single PDF file or a directory containing PDF files. Extracted questions are saved in the specified output directory.
+
+The utility reports successful extractions, papers requiring review, processing failures, and skipped papers.
+
+**Important:** Inspect extracted PDFs before using them in production. The splitter is designed for the supported Cambridge MCQ paper formats and may require manual review for unusual layouts.

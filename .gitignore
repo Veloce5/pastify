@@ -3,7 +3,6 @@
 # ==========================================
 
 # 1. Data & Media (NEVER track these due to size and privacy)
-past_papers*.db
 output_questions/
 split_papers.log
 *.bak_*
@@ -29,3 +28,11 @@ Thumbs.db
 # 4. Streamlit specific
 .streamlit/secrets.toml
 progress.db
+github_release_archives/
+
+# 5. MCQ Splitter - generated outputs and development backups
+mcq_*test*/
+mcq_full_test_*/
+mcq_*_report.csv
+mcq_*_audit.txt
+mcq_splitter_v*_backup.py
