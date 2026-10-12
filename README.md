@@ -1,563 +1,183 @@
-# Pastify
+<div align="center">
 
-**An interactive Cambridge A-Level past-paper platform built for targeted practice, timed testing, and measurable progress.**
+# 📚 Pastify
 
-Pastify transforms static past-paper PDFs into a structured learning experience where students can find exactly what they need, practice questions interactively, build custom worksheets, take timed tests, and track their performance over time.
+### Past papers, made practical.
 
-Built with **Python, Streamlit, SQLite, PyMuPDF, PyPDF2, and Plotly**.
+**An interactive Cambridge A-Level revision platform for finding questions, building worksheets, practising under exam conditions, and tracking progress.**
 
----
+[![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Release](https://img.shields.io/badge/Release-v1.1.0-2563eb)](https://github.com/Veloce5/pastify/releases/tag/v1.1.0)
 
-## 🚀 What is Pastify?
+**[🚀 Launch Pastify](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/) · [Latest release](https://github.com/Veloce5/pastify/releases/tag/v1.1.0) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/Veloce5/pastify/issues)**
 
-Cambridge A-Level students often have access to large collections of past papers, but finding the *right* question for targeted practice can be difficult when everything is stored as static PDFs.
-
-Pastify solves this by processing examination papers into structured question data and providing an interface for searching, filtering, practicing, and tracking progress.
-
-Instead of manually searching through hundreds of PDF pages, students can filter questions by criteria such as:
-
-* Subject
-* Topic
-* Year
-* Variant
-* Paper
-* Difficulty
-
-They can then move directly from finding a question to practicing it, adding it to a worksheet, taking a quiz, or using it as part of a timed test.
+</div>
 
 ---
 
-## ✨ Features
+## Overview
 
-### 🔎 Advanced Paper Filtering
+Finding a particular question in a folder of past-paper PDFs shouldn't be harder than answering it.
 
-Use cascading filters to quickly narrow down thousands of questions.
+**Pastify** transforms Cambridge A-Level past-paper material into a searchable, interactive question bank. Instead of opening papers one by one, students can narrow down questions, assemble targeted practice, take interactive quizzes or timed tests, and review their performance.
 
-Filter by:
+> **Current release — v1.1.0 (MCQ Expansion):** 1,340 multiple-choice questions added, bringing the question bank to **12,383 questions**. See the [release notes](https://github.com/Veloce5/pastify/releases/tag/v1.1.0).
 
-* Subject
-* Topic
-* Year
-* Variant
-* Paper
-* Difficulty
-* Keywords
+## Features
 
-Filters adapt to the current selection, helping students find relevant questions without manually searching through PDFs.
+| Feature | What it does |
+| --- | --- |
+| 🔎 **Browse Papers** | Filter questions by subject, topic, year, paper, variant, difficulty, and keywords. |
+| 📝 **Worksheet Builder** | Select questions and export a custom practice worksheet as a PDF. |
+| 🎮 **Quiz Mode** | Practise supported MCQs with A–D answer selection, feedback, scoring, and question navigation. |
+| ⏱️ **Timed Test** | Create timed practice sessions with configurable question selection and a countdown. |
+| 📈 **My Progress** | Explore attempts, accuracy, topic-level performance, practice activity, streaks, and achievements. |
+| 🎨 **Themes** | Switch between the app's custom visual themes. |
+| ✨ **What's New** | View release highlights and previous updates directly in the app. |
 
----
+### A closer look
 
-### 📝 Interactive Quizzes
+**Focused discovery.** Cascading filters help students move from a large collection of papers to a targeted set of questions without manually inspecting PDF pages.
 
-Practice Cambridge Paper 1 multiple-choice questions through an interactive quiz interface.
+**Active practice.** Quiz Mode and Timed Test provide distinct workflows for quick revision and exam-style sessions. Questions without recorded answers are excluded from answer-checked quizzes.
 
-Features include:
+**Reusable output.** Worksheet Builder lets students collect selected questions and generate a combined PDF for offline practice.
 
-* A/B/C/D answer selection
-* Answer locking
-* Immediate feedback
-* Question navigation
-* Score tracking
-* Attempt history
-* Topic-level performance data
+**Actionable feedback.** Progress analytics use Plotly visualizations to make patterns in attempts, accuracy, and activity easier to understand.
 
----
+## Application preview
 
-### ⏱️ Timed Test Simulator
+![Pastify application preview](1280x720.png)
 
-Create a timed practice session with configurable:
+*Repository preview image. [Explore the live app](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/).*
 
-* Test duration
-* Number of questions
-* Subject
-* Topic
-* Year
-* Variant
-* Difficulty
-
-The countdown timer runs independently from the rest of the application UI, keeping the interface responsive during the test.
-
----
-
-### 📄 Worksheet Builder
-
-Build a custom worksheet from individual questions.
-
-Students can:
-
-1. Browse questions
-2. Add selected questions to a worksheet
-3. Review their selection
-4. Generate a combined PDF
-5. Export the resulting worksheet
-
-This turns Pastify from a simple question browser into a practical revision tool.
-
----
-
-### 📊 Progress Analytics
-
-Pastify records practice attempts and turns them into useful performance information.
-
-The progress system includes:
-
-* Attempt history
-* Accuracy
-* Topic performance
-* Daily activity
-* Practice streaks
-* Question pacing
-* Badges and achievement thresholds
-
-Performance data is visualized using Plotly.
-
----
-
-### 🏆 Gamification
-
-Pastify includes a lightweight gamification layer designed to encourage consistent practice.
-
-Students can build:
-
-* Practice streaks
-* Achievement badges
-* Accuracy milestones
-* Activity history
-
----
-
-### 🌙 Theme Support
-
-Pastify includes a custom theme system with support for light and dark interfaces, using shared CSS variables and reusable styling components.
-
----
-
-# 🏗️ Architecture
-
-Pastify is structured into separate layers rather than placing application logic directly inside individual Streamlit pages.
+## How Pastify works
 
 ```text
-                         ┌─────────────────────┐
-                         │      Home.py        │
-                         │ Streamlit Entry Point│
-                         └──────────┬──────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              │                     │                     │
-              ▼                     ▼                     ▼
-       ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-       │ Page Layer  │       │ Components  │       │   Theme /   │
-       │             │       │  & Feedback │       │    Styles   │
-       └──────┬──────┘       └──────┬──────┘       └─────────────┘
-              │                     │
-              └─────────────┬───────┘
-                            ▼
-                   ┌─────────────────┐
-                   │ Application     │
-                   │ Logic & State   │
-                   └────────┬────────┘
-                            │
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-      ┌─────────────────┐         ┌─────────────────┐
-      │ Database Layer  │         │ Progress Engine │
-      │   database.py   │         │   progress.py   │
-      └────────┬────────┘         └────────┬────────┘
-               │                           │
-               ▼                           ▼
-       ┌─────────────────┐         ┌─────────────────┐
-       │ past_papers.db  │         │   progress.db   │
-       └─────────────────┘         └─────────────────┘
+Cambridge examination PDFs
+           │
+           ▼
+  PDF processing pipeline
+  • Parse paper metadata
+  • Detect question boundaries
+  • Handle MCQ-specific layouts
+  • Extract question/mark-scheme assets
+           │
+           ▼
+      SQLite question bank
+           │
+           ▼
+   Streamlit application
+   ├── Browse Papers
+   ├── Worksheet Builder
+   ├── Quiz Mode
+   ├── Timed Test
+   └── My Progress
+           │
+           ▼
+    Practice & analytics
 ```
 
-This separation allows individual parts of the application to evolve without requiring every page to contain its own database, state, or UI logic.
+The application uses a modular structure rather than embedding database queries, PDF processing, and UI logic in a single page.
 
----
+### Engineering highlights
 
-# ⚡ Performance Engineering
+- **PDF extraction:** `split_papers.py` uses progressively finer text anchors (block → line → span), paper metadata parsing, MCQ-aware processing, and fallback handling for difficult layouts.
+- **Dedicated MCQ utility:** `mcq_splitter.py` provides a separate command-line tool for splitting supported multiple-choice papers into individual question PDFs.
+- **Hybrid PDF access:** `pdf_storage.py` supports accessing processed PDF assets through local storage and GitHub Releases, reducing reliance on bundling large PDFs with the application code.
+- **Efficient queries:** SQLite indexes support common filtering operations; Streamlit caching reduces repeated database and rendering work.
+- **Responsive interactions:** Streamlit fragments isolate frequently changing UI such as feedback and timed-test countdowns.
+- **Separation of concerns:** Question metadata and student progress are handled through distinct application modules and data flows.
 
-Pastify works with a large collection of PDF-based question assets, so responsiveness is an important part of the architecture.
+## Tech stack
 
-### SQLite Indexing
+| Area | Technologies |
+| --- | --- |
+| Application | Python, Streamlit |
+| Data | SQLite |
+| PDF processing | PyMuPDF, PyPDF2 |
+| Analytics | Plotly |
+| Interface | Streamlit components, custom CSS, theme management |
+| Asset delivery | Local PDF files, GitHub Releases |
 
-The database initialization layer ensures indexes exist on frequently queried fields such as:
+## Try it online
 
-* Subject
-* Topic
-* Year
-* Variant
-* Paper
-* Question path
+**[Open Pastify on Streamlit Cloud →](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/)**
 
-This improves performance for the application's multi-stage filtering system.
+No local setup is needed to explore the hosted application.
 
-### Streamlit Caching
+## Getting started
 
-Expensive operations are cached using Streamlit's caching mechanisms.
-
-Database queries use `st.cache_data`, while the database connection is managed through `st.cache_resource`.
-
-### Smart PDF Rendering Cache
-
-Rendered PDF pages are cached using the resolved file path, file modification time, and rendering configuration.
-
-This means a PDF does not need to be rendered again when the underlying file has not changed.
-
-### UI Fragments
-
-Interactive operations that would otherwise trigger larger Streamlit reruns are isolated using `st.fragment`.
-
-This is used for components such as:
-
-* Answer feedback
-* The timed-test countdown
-* Other frequently changing interactive state
-
-The result is a more responsive experience without repeatedly rebuilding the entire page.
-
----
-
-# 📄 Advanced PDF Processing Pipeline
-
-One of the core engineering components of Pastify is `split_papers.py`.
-
-Rather than treating examination papers as simple documents that can be split using fixed string positions, Pastify uses a multi-stage extraction pipeline designed around the structure of Cambridge examination PDFs.
-
-### Filename & Question Parsing
-
-Metadata is extracted from Cambridge's examination-paper naming conventions.
-
-This allows question files to be associated with information such as:
-
-* Subject
-* Session
-* Year
-* Variant
-* Paper
-* Question number
-
-### Multiple-Choice Question Detection
-
-Multiple-choice mark schemes require different handling from written-answer mark schemes.
-
-The extraction pipeline therefore includes dedicated processing logic for MCQ material.
-
-### Hierarchical Anchor Detection
-
-When locating question boundaries, the pipeline can progressively fall back through different levels of PDF text structure.
-
-```text
-Block
-  ↓
-Line
-  ↓
-Span
-```
-
-This provides additional resilience when a standard text anchor cannot be found.
-
-### Zero-Drop Fallbacks
-
-The extraction process includes fallback handling and page-range validation intended to prevent questions from silently disappearing when the expected PDF structure is not detected.
-
----
-
-# 🗂️ Project Structure
-
-```text
-Pastify/
-│
-├── Home.py
-│
-├── pages_src/
-│   ├── about.py
-│   ├── browse.py
-│   ├── landing.py
-│   ├── my_progress.py
-│   ├── quiz.py
-│   ├── timed_test.py
-│   └── worksheet.py
-│
-├── analytics.py
-├── components.py
-├── config.py
-├── database.py
-├── feedback.py
-├── linked_list.py
-├── profile.py
-├── progress.py
-├── split_papers.py
-├── styles.css
-├── theme.py
-├── utils.py
-│
-├── clean_db.py
-├── requirements.txt
-│
-├── README.md
-└── .gitignore
-```
-
-### Key Modules
-
-| File              | Purpose                                                           |
-| ----------------- | ----------------------------------------------------------------- |
-| `Home.py`         | Main Streamlit entry point and page navigation                    |
-| `pages_src/`      | Individual application pages                                      |
-| `components.py`   | Reusable UI components and filter interface                       |
-| `database.py`     | SQLite connection, filtering, and query operations                |
-| `progress.py`     | Attempt history, streaks, badges, and performance tracking        |
-| `analytics.py`    | Progress visualization and analytics                              |
-| `feedback.py`     | Quiz answer handling, scoring, and feedback                       |
-| `linked_list.py`  | Doubly linked list used for question traversal                    |
-| `split_papers.py` | PDF ingestion and question extraction pipeline                    |
-| `utils.py`        | PDF rendering, merging, ZIP creation, and utility functions       |
-| `config.py`       | Application paths, constants, database configuration, and indexes |
-| `theme.py`        | Theme management and CSS handling                                 |
-| `styles.css`      | Custom application styling                                        |
-| `clean_db.py`     | Database cleaning and maintenance utility                         |
-
----
-
-# 🛠️ Tech Stack
-
-### Application
-
-* **Python**
-* **Streamlit**
-
-### Data & Storage
-
-* **SQLite**
-* **Streamlit caching**
-* Separate databases for paper content and user progress
-
-### PDF Processing
-
-* **PyMuPDF**
-* **PyPDF2**
-
-### Visualization
-
-* **Plotly**
-
-### Frontend
-
-* Streamlit components
-* Custom CSS
-* Responsive UI elements
-* Light/dark theme system
-
----
-
-# 🚀 Installation & Setup
-
-## 1. Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Veloce5/pastify.git
 cd pastify
 ```
 
-## 2. Install dependencies
+### 2. Create an environment and install dependencies
 
 ```bash
-pip install -r requirements.txt
-```
-
-## 3. Add the required data
-
-Pastify requires the application's paper database and processed PDF assets.
-
-Place:
-
-```text
-past_papers.db
-```
-
-and the processed PDF files inside:
-
-```text
-output_questions/
-```
-
-The repository does not include the full paper dataset.
-
-## 4. Launch Pastify
-
-```bash
-streamlit run Home.py
-```
-
-The application should then open in your browser.
-
----
-
-# 🧪 Testing
-
-Automated testing is an ongoing part of Pastify's development.
-
-The most important areas for testing include:
-
-* Database filtering
-* PDF filename parsing
-* Question extraction
-* Question navigation
-* Progress calculations
-* Streak calculations
-* Badge thresholds
-* PDF utilities
-
-Run the test suite with:
-
-```bash
-pytest
-```
-
-> If you have not yet added the `tests/` directory, this section can be added when the automated test suite is introduced.
-
----
-
-# 🔧 Design Decisions
-
-## Why SQLite?
-
-Pastify's paper data is primarily read-heavy and structured around filtering and retrieval.
-
-SQLite provides a lightweight relational database without requiring a separate database server, making it well suited to the application's current architecture.
-
-Indexes are created for frequently queried fields to improve filtering performance.
-
-## Why Separate Progress Storage?
-
-Past-paper content and student-generated progress data have different purposes.
-
-```text
-past_papers.db
-     │
-     └── Question & paper metadata
-
-progress.db
-     │
-     └── Attempts & learning progress
-```
-
-Separating these concerns makes it easier to keep the core paper dataset read-focused while allowing progress data to change frequently.
-
-## Why a Doubly Linked List?
-
-Question-based interfaces frequently require moving between the current question, the previous question, and the next question.
-
-The custom `DoublyLinkedList` implementation provides a centralized abstraction for this traversal rather than duplicating navigation logic across quiz and test interfaces.
-
----
-
-# 📈 Future Roadmap
-
-Pastify is an evolving project.
-
-### Completed
-
-* [x] Advanced cascading filters
-* [x] Interactive Paper 1 quizzes
-* [x] Timed test simulator
-* [x] Worksheet builder
-* [x] Progress tracking
-* [x] Topic analytics
-* [x] Streaks and badges
-* [x] PDF question extraction pipeline
-* [x] Light/dark theme support
-
-### Planned
-
-* [ ] Expand subject coverage
-* [ ] Increase automated test coverage
-* [ ] Improve accessibility
-* [ ] Expand analytics
-* [ ] Further optimize PDF processing
-* [ ] Continue improving the question database
-* [ ] Production deployment improvements
-
----
-
-# 👥 Team
-
-Pastify is developed collaboratively.
-
-### Dev Joshi
-
-**Co-Founder & Backend Lead**
-
-Responsible for backend architecture, database systems, PDF processing, application logic, and performance-focused development.
-
-### Veer Sanghvi
-
-**Co-Founder & Frontend Lead**
-
-Responsible for the frontend experience, interface design, and user-facing application development.
-
----
-
-# 📸 Application Preview
-
-> Add screenshots or a short GIF of the application here.
-
-Recommended screenshots:
-
-1. **Landing Page** — Overall Pastify experience
-2. **Browse** — Cascading filters and question selection
-3. **Quiz** — Interactive question and answer feedback
-4. **Timed Test** — Countdown timer and test interface
-5. **My Progress** — Analytics, activity, streaks, and badges
-6. **Worksheet Builder** — Custom question collection and export
-
----
-
-# 📄 License
-
-This project is currently maintained as a personal/educational software project.
-
-Add a formal open-source license here if you intend to distribute the source code under specific reuse terms.
-
----
-
-## ⭐ About Pastify
-
-Pastify was built around a simple idea:
-
-**Past papers are one of the most valuable resources available to A-Level students — they should be easier to search, practice, and learn from.**
-
-By combining structured question data, intelligent filtering, interactive practice, PDF processing, analytics, and gamification, Pastify turns a collection of static examination papers into a more usable learning platform.
-
----
-
-# 🧩 MCQ Question Splitter
-
-Pastify includes a standalone Python utility for splitting Cambridge multiple-choice question papers into individual question PDFs.
-
-## Supported Subjects
-
-| Subject Code | Subject | Questions per Paper |
-|---|---|---:|
-| 9702 | Physics | 40 |
-| 9706 | Accounting | 30 |
-| 9708 | Economics | 30 |
-
-## Requirements
-
-- Python 3
-- Dependencies listed in `requirements.txt`
-- PyMuPDF, which is used to process PDFs
-
-Install the project dependencies from the repository root:
-
-```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-## Usage
+On Windows, activate the environment using `.venv\Scripts\activate` instead.
 
-### Split a single PDF
+### 3. Check the question data and PDF assets
+
+The repository includes the application's SQLite question database (`past_papers.db`), but **the complete collection of processed question PDFs is not stored in Git**.
+
+PDFs are accessed using the app's configured storage mechanism, including local `output_questions/` assets and GitHub Releases-hosted assets. If you are running your own copy, confirm that the database and PDF storage settings in `config.py` and `pdf_storage.py` match the assets available to you. Some paper previews or exports may require those assets.
+
+### 4. Start the app
+
+```bash
+python3 -m streamlit run Home.py
+```
+
+Open the local address shown in the terminal (usually `http://localhost:8501`).
+
+> **Deployment:** The hosted application is maintained on the `hosting-ready` branch. `main` is the primary development/reference branch.
+
+## Repository guide
+
+```text
+pastify/
+├── Home.py                  # Streamlit entry point and navigation
+├── pages_src/               # App pages, including What's New
+├── components.py            # Reusable interface components
+├── database.py              # Question-bank access and filtering
+├── analytics.py             # Progress analytics
+├── progress.py              # Progress and achievement logic
+├── feedback.py              # Answers and scoring feedback
+├── profile.py               # User profile initialization
+├── theme.py                 # Theme synchronization
+├── styles.css               # Custom styling
+├── config.py                # Paths and application configuration
+├── utils.py                 # PDF rendering and other utilities
+├── pdf_storage.py           # Local and remote PDF access
+├── split_papers.py          # General question extraction pipeline
+├── mcq_splitter.py          # Standalone Cambridge MCQ splitter
+├── past_papers.db           # Question metadata database
+├── requirements.txt         # Python dependencies
+├── CHANGELOG.md             # Release history
+└── README.md
+```
+
+### Standalone MCQ splitter
+
+The project also includes `mcq_splitter.py`, a standalone utility for extracting individual questions from supported Cambridge multiple-choice papers.
+
+| Subject | Syllabus code | Questions per paper |
+| --- | --- | ---: |
+| Physics | `9702` | 40 |
+| Accounting | `9706` | 30 |
+| Economics | `9708` | 30 |
+
+**Split one paper:**
 
 ```bash
 python3 mcq_splitter.py \
@@ -565,7 +185,7 @@ python3 mcq_splitter.py \
   --output "./split_questions"
 ```
 
-### Split a directory of PDFs
+**Split a directory:**
 
 ```bash
 python3 mcq_splitter.py \
@@ -573,14 +193,52 @@ python3 mcq_splitter.py \
   --output "./split_questions"
 ```
 
-### View command-line options
+Run `python3 mcq_splitter.py --help` for available options. Review extracted PDFs before using them in a question bank; unusual layouts may require manual inspection.
+
+## Testing and development
+
+Pastify's key testing areas include PDF parsing and extraction, database filtering, question navigation, answer validation, progress calculations, and PDF utilities.
+
+If the test dependencies and test suite are installed in your checkout, run:
 
 ```bash
-python3 mcq_splitter.py --help
+python3 -m pytest
 ```
 
-The input can be a single PDF file or a directory containing PDF files. Extracted questions are saved in the specified output directory.
+A successful Python syntax check is not a substitute for testing the interactive application with representative questions and PDF assets.
 
-The utility reports successful extractions, papers requiring review, processing failures, and skipped papers.
+## Releases and roadmap
 
-**Important:** Inspect extracted PDFs before using them in production. The splitter is designed for the supported Cambridge MCQ paper formats and may require manual review for unusual layouts.
+**v1.1.0 — MCQ Expansion**
+
+- Added **1,340 MCQs** to the question bank (**12,383 questions total**).
+- Improved MCQ PDF processing and question availability.
+- Excluded questions without recorded answers from quizzes.
+- Added an in-app **What's New** page.
+
+Read the complete [changelog](CHANGELOG.md) or browse [GitHub Releases](https://github.com/Veloce5/pastify/releases).
+
+**Areas for continued improvement:** broader subject coverage, automated test coverage, accessibility, analytics, and PDF-processing reliability.
+
+## Team
+
+| Contributor | Role | Focus |
+| --- | --- | --- |
+| **Dev Joshi** | Co-Founder & Backend Lead | Architecture, databases, PDF processing, application logic, performance |
+| **Veer Sanghvi** | Co-Founder & Frontend Lead | Interface design, frontend experience, user-facing workflows |
+
+## Project status and usage
+
+Pastify is an independently developed educational project. Examination papers and mark schemes belong to their respective rights holders; this repository's availability does not grant rights to redistribute third-party materials.
+
+**No open-source license is currently specified in this repository.** Until a license is added, do not assume the source code is licensed for unrestricted reuse or redistribution.
+
+---
+
+<div align="center">
+
+**Built to make past-paper practice more focused, flexible, and useful.**
+
+[Back to top](#-pastify) · [View v1.1.0](https://github.com/Veloce5/pastify/releases/tag/v1.1.0)
+
+</div>
