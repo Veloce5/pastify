@@ -70,7 +70,7 @@ def render():
         filters["Paper_number"] = 1
 
         with st.spinner("Loading questions…"):
-            results = filter_papers(filters, limit=int(num_questions))
+            results = filter_papers(filters, limit=int(num_questions), answered_only=True)
 
         if not results:
             render_empty_state("No questions matched those filters", "Try widening Topic or Year.", icon="🔍")

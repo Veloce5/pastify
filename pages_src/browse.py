@@ -74,7 +74,14 @@ def render():
                 st.rerun()
 
         st.markdown(f"#### {'Question' if show_q else 'Answer'}")
-        utils.render_pdf(q_path if show_q else a_path, empty_message="This PDF is missing from disk.")
+        if show_q:
+            utils.render_pdf(q_path, empty_message="This question PDF is unavailable.")
+        elif isinstance(a_path, str) and a_path.strip().upper() in ("A", "B", "C", "D"):
+            st.success(f"Correct answer: {a_path.strip().upper()}")
+        elif isinstance(a_path, str) and a_path.lower().endswith(".pdf"):
+            utils.render_pdf(a_path, empty_message="This answer PDF is unavailable.")
+        else:
+            st.info("Answer not available for this question yet.")
 
         nav1, _, nav3 = st.columns([1, 3, 1])
         with nav1:

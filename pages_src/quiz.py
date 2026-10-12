@@ -34,7 +34,7 @@ def render():
         filters["Paper_number"] = 1  # quiz mode only uses single-question, letter-answer papers
 
         with st.spinner("Loading questions…"):
-            results = filter_papers(filters)
+            results = filter_papers(filters, answered_only=True)
 
         if not results:
             render_empty_state("No questions matched those filters", "Try widening Topic or Year.", icon="🔍")

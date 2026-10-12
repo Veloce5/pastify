@@ -9,13 +9,16 @@ from — so resets can never drift out of sync between pages again.
 from __future__ import annotations
 
 import sqlite3
+import os
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 APP_DIR = Path(__file__).parent
-DB_PATH = APP_DIR / "past_papers.db"
+DB_PATH = Path(
+    os.environ.get("PASTIFY_DB_PATH", str(APP_DIR / "past_papers.db"))
+).resolve()
 PROGRESS_DB_PATH = APP_DIR / "progress.db"  # local attempt history / streaks / badges
 CSS_PATH = APP_DIR / "styles.css"
 LOGO_PATH = APP_DIR / "1280x720.png"

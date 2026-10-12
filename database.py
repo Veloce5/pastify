@@ -66,11 +66,13 @@ def get_distinct_values(column: str, filters: dict = None) -> list:
 
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def filter_papers(filters: dict, limit: int | None = None) -> list[tuple]:
+def filter_papers(filters: dict, limit: int | None = None, answered_only: bool = False) -> list[tuple]:
     filters = _normalize(filters)
     conn = get_connection()
     where, params = _where_clause(filters)
     query = f"SELECT * FROM past_papers WHERE Question IS NOT NULL{where}"
+    if answered_only:
+        query += " AND Answer IN ('A', 'B', 'C', 'D')"
     if limit:
         query += " ORDER BY RANDOM() LIMIT ?"
         params.append(limit)
@@ -127,6 +129,8 @@ def get_sorted_topics(subject: str) -> tuple[list, list]:
     topics = get_distinct_values("Topic", {"Subject_name": subject})
     sorted_topics, unsorted_topics = [], []
     for topic in topics:
+        if not isinstance(topic, str) or not topic.strip():
+            continue
         parts = topic.split(" - ")
         if len(parts) >= 3:
             try:
