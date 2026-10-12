@@ -32,6 +32,7 @@ pages = [
     st.Page("pages_src/quiz.py", title="Quiz Mode", icon="🎮"),
     st.Page("pages_src/timed_test.py", title="Timed Test", icon="⏱️"),
     st.Page("pages_src/my_progress.py", title="My Progress", icon="📈"),
+    st.Page("pages_src/whats_new.py", title="What's New", icon="✨"),
     st.Page("pages_src/about.py", title="About Us", icon="👥"),
 ]
 
