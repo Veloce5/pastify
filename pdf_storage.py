@@ -186,7 +186,7 @@ def get_pdf_bytes(relative_path: str | None) -> bytes | None:
         release_base_url = _get_setting(
             "GITHUB_RELEASE_BASE_URL",
             "https://github.com/Veloce5/pastify/releases/"
-            "download/pdf-storage-test-v1",
+            "download/v1.2.0",
         )
 
         try:

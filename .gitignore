@@ -60,3 +60,6 @@ excluded_sources.txt
 unmatched_sources.txt
 *_audit.csv
 *_audit_summary.txt
+
+# Local production migration backups
+.pastify_production_backup_*/
