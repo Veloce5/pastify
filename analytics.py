@@ -57,7 +57,7 @@ def render_accuracy_heatmap(topic_accuracy: dict[str, dict]) -> None:
         paper_bgcolor=CHART_THEME["bg_transparent"],
         plot_bgcolor=CHART_THEME["bg_transparent"],
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 def render_time_per_question(history: list[dict]) -> None:
@@ -80,7 +80,7 @@ def render_time_per_question(history: list[dict]) -> None:
         paper_bgcolor=CHART_THEME["bg_transparent"],
         plot_bgcolor=CHART_THEME["bg_transparent"],
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 def render_progress_trend(daily_activity: dict[str, int]) -> None:
@@ -103,7 +103,7 @@ def render_progress_trend(daily_activity: dict[str, int]) -> None:
         paper_bgcolor=CHART_THEME["bg_transparent"],
         plot_bgcolor=CHART_THEME["bg_transparent"],
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 def render_accuracy_donut(correct: int, wrong: int) -> None:
@@ -126,4 +126,4 @@ def render_accuracy_donut(correct: int, wrong: int) -> None:
         paper_bgcolor=CHART_THEME["bg_transparent"],
         annotations=[dict(text=f"{total}", x=0.5, y=0.5, font_size=22, showarrow=False)],
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})

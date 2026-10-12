@@ -23,7 +23,7 @@ def _confirm_and_generate(cart: list[dict]):
     st.write(f"This will merge **{len(cart)} question(s)** into a question booklet and a matching answer key.")
     st.caption("Files missing on disk will be skipped automatically rather than failing the whole export.")
 
-    if st.button("Generate now", type="primary", use_container_width=True):
+    if st.button("Generate now", type="primary", width="stretch"):
         questions = [item["question_path"] for item in cart]
         answers = [item["answer_path"] for item in cart]
 
@@ -42,7 +42,7 @@ def _confirm_and_generate(cart: list[dict]):
         else:
             st.error("Something went wrong while merging. Please try again.")
 
-    if st.button("Cancel", use_container_width=True):
+    if st.button("Cancel", width="stretch"):
         st.rerun()
 
 
@@ -75,7 +75,7 @@ def render():
                 st.toast(f"Added {added} question(s) to your cart ({len(results) - added} already in it).", icon="🛒")
 
     with right:
-        if st.button("Clear cart", use_container_width=True):
+        if st.button("Clear cart", width="stretch"):
             reset_keys(CART_KEYS)
             st.rerun()
 
@@ -84,7 +84,7 @@ def render():
     cart = render_cart_summary()
 
     if cart:
-        if st.button(f"Generate Worksheet ({len(cart)} questions)", type="primary", use_container_width=True):
+        if st.button(f"Generate Worksheet ({len(cart)} questions)", type="primary", width="stretch"):
             _confirm_and_generate(cart)
 
     if st.session_state.get("worksheet_zip"):
@@ -96,7 +96,7 @@ def render():
             file_name="pastify_worksheet.zip",
             mime="application/zip",
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
 
 

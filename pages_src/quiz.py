@@ -34,7 +34,7 @@ def render():
         filters["Paper_number"] = 1  # quiz mode only uses single-question, letter-answer papers
 
         with st.spinner("Loading questions…"):
-            results = filter_papers(filters)
+            results = filter_papers(filters, answered_only=True)
 
         if not results:
             render_empty_state("No questions matched those filters", "Try widening Topic or Year.", icon="🔍")
@@ -69,12 +69,12 @@ def render():
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⬅ Previous", use_container_width=True, disabled=node.prev is None, key="previous_button"):
+        if st.button("⬅ Previous", width="stretch", disabled=node.prev is None, key="previous_button"):
             st.session_state.current_node = dll.get_previous(node)
             mark_question_shown()
             st.rerun()
     with col2:
-        if st.button("Next ➡", use_container_width=True, disabled=node.next is None, key="next_button"):
+        if st.button("Next ➡", width="stretch", disabled=node.next is None, key="next_button"):
             st.session_state.current_node = dll.get_next(node)
             mark_question_shown()
             st.rerun()

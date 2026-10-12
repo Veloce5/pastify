@@ -62,7 +62,7 @@ def render_answer_options(mode: str, topic: str | None, subject: str | None, pro
     cols = st.columns(4)
     for col, label in zip(cols, OPTIONS):
         with col:
-            clicked = st.button(label, key=f"answer_{label.lower()}", use_container_width=True, disabled=already_answered)
+            clicked = st.button(label, key=f"answer_{label.lower()}", width="stretch", disabled=already_answered)
         if clicked and not already_answered and node_key:
             is_correct = label == correct_answer
             shown_at = st.session_state.get("question_shown_at")
