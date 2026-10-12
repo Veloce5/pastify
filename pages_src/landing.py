@@ -74,15 +74,15 @@ def render():
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button("Open →", key=f"nav_{title}", use_container_width=True):
+            if st.button("Open →", key=f"nav_{title}", width="stretch"):
                 st.switch_page(target)
 
     st.write("")
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
-        if st.button("📈 View My Progress", use_container_width=True):
+        if st.button("📈 View My Progress", width="stretch"):
             st.switch_page("pages_src/my_progress.py")
-        if st.button("👥 About Us", use_container_width=True):
+        if st.button("👥 About Us", width="stretch"):
             st.switch_page("pages_src/about.py")
 
     _render_footer()

@@ -18,6 +18,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from theme import sync_native_theme
+sync_native_theme()
+
+
+
 get_profile()  # shows the welcome dialog once per session if needed
 
 pages = [
@@ -27,6 +32,7 @@ pages = [
     st.Page("pages_src/quiz.py", title="Quiz Mode", icon="🎮"),
     st.Page("pages_src/timed_test.py", title="Timed Test", icon="⏱️"),
     st.Page("pages_src/my_progress.py", title="My Progress", icon="📈"),
+    st.Page("pages_src/whats_new.py", title="What's New", icon="✨"),
     st.Page("pages_src/about.py", title="About Us", icon="👥"),
 ]
 
