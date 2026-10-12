@@ -37,3 +37,26 @@ mcq_full_test_*/
 mcq_*_report.csv
 mcq_*_audit.txt
 mcq_splitter_v*_backup.py
+
+# Pastify local development exclusions
+
+# Historical local archives and backups
+/archive/
+*.zip
+
+# Local database snapshots (existing tracked databases are unaffected)
+*_backup.db
+*_preview.db
+past_papers_before_*.db
+past_papers_recovered.db
+pastify_mcq_*.db
+
+# Generated extraction datasets and reports
+/Pastify Workspace/
+pastify_mcq_*staging/
+pastify_mcq_*backup/
+batch_report.csv
+excluded_sources.txt
+unmatched_sources.txt
+*_audit.csv
+*_audit_summary.txt

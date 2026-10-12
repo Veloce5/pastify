@@ -21,7 +21,7 @@ import pymupdf
 
 
 FILENAME_RE = re.compile(
-    r"(?P<subject>\d{4})_[swm]\d{2}_qp_(?P<paper>\d{2})\.pdf$",
+    r"(?P<subject>\d{4})_[swm]\d{2}_qp_(?P<paper>\d{1,2})\.pdf$",
     re.IGNORECASE,
 )
 
@@ -149,7 +149,7 @@ def collect_number_candidates(doc):
             if not (30 <= x0 <= page.rect.width * 0.35):
                 continue
 
-            if not (55 <= y0 <= page.rect.height * 0.93):
+            if not (50 <= y0 <= page.rect.height * 0.93):
                 continue
 
             candidates.append(
@@ -510,7 +510,18 @@ def process_pdf(pdf_path, output_root):
     if subject not in EXPECTED_QUESTIONS:
         return "skipped", "Subject not enabled"
 
-    if not paper.startswith("1"):
+    if paper.startswith("1"):
+        pass
+    elif paper.startswith("3") and subject in {"9706", "9708"}:
+        with pymupdf.open(pdf_path) as check_doc:
+            header = " ".join(
+                page.get_text()
+                for page in list(check_doc)[:2]
+            ).lower()
+
+        if "multiple choice" not in header:
+            return "skipped", "Paper 3 is not multiple choice"
+    else:
         return "skipped", "Not an MCQ paper"
 
     expected = EXPECTED_QUESTIONS[subject]

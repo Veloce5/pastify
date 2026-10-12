@@ -46,8 +46,8 @@ your original, unmodified file — schema untouched, nothing was written to it).
 
 1. **Run once, locally, against your real `past_papers.db`:**
    ```bash
-   python clean_db.py --db past_papers.db --dry-run   # preview first
-   python clean_db.py --db past_papers.db             # apply (auto-backs-up the .db first)
+   python tools/database/clean_db.py --db past_papers.db --dry-run   # preview first
+   python tools/database/clean_db.py --db past_papers.db             # apply (auto-backs-up the .db first)
    ```
    This strips everything up to and including `output_questions/`, leaving
    pure relative paths like `qp/9618/2024/May_June/12/1(a).pdf`. It's

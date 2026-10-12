@@ -4,6 +4,18 @@ All notable updates to Pastify are documented here.
 
 Versions follow Semantic Versioning: MAJOR.MINOR.PATCH.
 
+## [Unreleased]
+
+### Development and maintenance
+- Reorganized database and MCQ extraction utilities into `tools/`.
+- Added configurable MCQ batch processing with a dry-run preview.
+- Preserved historical crop-processing scripts and code backups.
+- Organized application assets, screenshots, and migration documentation.
+- Added isolated database and PDF storage configuration for MCQ integration testing.
+- Updated repository documentation and file paths.
+
+The expanded 19,103-row MCQ integration database is under local validation and is not part of the published v1.1.0 release.
+
 ## [1.1.0] — 2026-10-11
 
 ### Added

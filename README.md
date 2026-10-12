@@ -48,7 +48,7 @@ Finding a particular question in a folder of past-paper PDFs shouldn't be harder
 
 ## Application preview
 
-![Pastify application preview](1280x720.png)
+![Pastify application preview](assets/1280x720.png)
 
 *Repository preview image. [Explore the live app](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/).*
 
@@ -83,8 +83,8 @@ The application uses a modular structure rather than embedding database queries,
 
 ### Engineering highlights
 
-- **PDF extraction:** `split_papers.py` uses progressively finer text anchors (block → line → span), paper metadata parsing, MCQ-aware processing, and fallback handling for difficult layouts.
-- **Dedicated MCQ utility:** `mcq_splitter.py` provides a separate command-line tool for splitting supported multiple-choice papers into individual question PDFs.
+- **PDF extraction:** `tools/database/split_papers.py` uses progressively finer text anchors (block → line → span), paper metadata parsing, MCQ-aware processing, and fallback handling for difficult layouts.
+- **Dedicated MCQ utility:** `tools/mcq/mcq_splitter.py` provides a separate command-line tool for splitting supported multiple-choice papers into individual question PDFs.
 - **Hybrid PDF access:** `pdf_storage.py` supports accessing processed PDF assets through local storage and GitHub Releases, reducing reliance on bundling large PDFs with the application code.
 - **Efficient queries:** SQLite indexes support common filtering operations; Streamlit caching reduces repeated database and rendering work.
 - **Responsive interactions:** Streamlit fragments isolate frequently changing UI such as feedback and timed-test countdowns.
@@ -144,32 +144,13 @@ Open the local address shown in the terminal (usually `http://localhost:8501`).
 
 ## Repository guide
 
-```text
-pastify/
-├── Home.py                  # Streamlit entry point and navigation
-├── pages_src/               # App pages, including What's New
-├── components.py            # Reusable interface components
-├── database.py              # Question-bank access and filtering
-├── analytics.py             # Progress analytics
-├── progress.py              # Progress and achievement logic
-├── feedback.py              # Answers and scoring feedback
-├── profile.py               # User profile initialization
-├── theme.py                 # Theme synchronization
-├── styles.css               # Custom styling
-├── config.py                # Paths and application configuration
-├── utils.py                 # PDF rendering and other utilities
-├── pdf_storage.py           # Local and remote PDF access
-├── split_papers.py          # General question extraction pipeline
-├── mcq_splitter.py          # Standalone Cambridge MCQ splitter
-├── past_papers.db           # Question metadata database
-├── requirements.txt         # Python dependencies
-├── CHANGELOG.md             # Release history
-└── README.md
-```
+The application code lives in the repository root and `pages_src/`. Assets and screenshots are in `assets/`, database utilities in `tools/database/`, MCQ utilities in `tools/mcq/`, historical crop scripts in `tools/mcq/legacy/`, migration notes in `docs/`, and local development archives in `archive/`.
+
+The tracked `past_papers.db` supports the existing application. Generated PDFs and local progress data are excluded from Git.
 
 ### Standalone MCQ splitter
 
-The project also includes `mcq_splitter.py`, a standalone utility for extracting individual questions from supported Cambridge multiple-choice papers.
+The project also includes `tools/mcq/mcq_splitter.py`, a standalone utility for extracting individual questions from supported Cambridge multiple-choice papers.
 
 | Subject | Syllabus code | Questions per paper |
 | --- | --- | ---: |
@@ -180,7 +161,7 @@ The project also includes `mcq_splitter.py`, a standalone utility for extracting
 **Split one paper:**
 
 ```bash
-python3 mcq_splitter.py \
+python3 tools/mcq/mcq_splitter.py \
   --input "/path/to/question_paper.pdf" \
   --output "./split_questions"
 ```
@@ -188,12 +169,28 @@ python3 mcq_splitter.py \
 **Split a directory:**
 
 ```bash
-python3 mcq_splitter.py \
+python3 tools/mcq/mcq_splitter.py \
   --input "/path/to/question_papers" \
   --output "./split_questions"
 ```
 
-Run `python3 mcq_splitter.py --help` for available options. Review extracted PDFs before using them in a question bank; unusual layouts may require manual inspection.
+Run `python3 tools/mcq/mcq_splitter.py --help` for available options. Review extracted PDFs before using them in a question bank; unusual layouts may require manual inspection.
+
+### Batch MCQ processing
+
+The batch processor at `tools/mcq/run_mcq_batch.py` discovers eligible Cambridge MCQ papers and produces extraction reports.
+
+Preview papers without writing files:
+
+    python3 tools/mcq/run_mcq_batch.py --input /path/to/source_papers --output /path/to/new_staging --subjects 9702 9706 9708 --dry-run
+
+Remove `--dry-run` only after reviewing the results. The destination must not already exist. Source folders currently follow the names `9702 Physics`, `9706 Accounting`, and `9708 Economics`. Additional subjects require testing and support in the splitter.
+
+### Isolated MCQ integration
+
+The public v1.1.0 release contains **12,383 questions**. A separate local integration database contains **19,103 rows**, including **6,720 additional MCQs**. This expanded dataset has not replaced the published release.
+
+For local integration testing, configure `PASTIFY_DB_PATH`, `PASTIFY_OUTPUT_DIR`, and `PDF_STORAGE_MODE=local` to point to the isolated database and PDF assets.
 
 ## Testing and development
 

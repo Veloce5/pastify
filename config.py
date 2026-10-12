@@ -21,9 +21,14 @@ DB_PATH = Path(
 ).resolve()
 PROGRESS_DB_PATH = APP_DIR / "progress.db"  # local attempt history / streaks / badges
 CSS_PATH = APP_DIR / "styles.css"
-LOGO_PATH = APP_DIR / "1280x720.png"
+LOGO_PATH = APP_DIR / "assets" / "1280x720.png"
 
-OUTPUT_DIR = APP_DIR / "output_questions"
+OUTPUT_DIR = Path(
+    os.environ.get(
+        "PASTIFY_OUTPUT_DIR",
+        str(APP_DIR / "output_questions")
+    )
+).resolve()
 
 _warned_missing_output_dir = False
 
