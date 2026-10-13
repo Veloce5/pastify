@@ -1,3 +1,34 @@
+import streamlit as st
+
+st.set_page_config(
+    page_title="Pastify | Temporarily Unavailable",
+    page_icon="📚",
+    layout="centered"
+)
+
+st.title("Pastify")
+st.info("Our past-paper practice features are temporarily unavailable.")
+
+st.markdown("""
+### Copyright Review
+
+Pastify's examination-question and mark-scheme viewing features
+have been temporarily disabled following correspondence with
+Cambridge International regarding copyright permissions.
+
+We are reviewing how to continue offering our educational
+platform in accordance with the applicable copyright policies.
+
+**No examination questions, mark schemes, or PDF downloads
+are available through this page.**
+
+Thank you for your understanding.
+""")
+
+st.caption("Pastify Team")
+
+st.stop()
+
 """
 Home.py
 
