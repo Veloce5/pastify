@@ -59,6 +59,21 @@ def render_release(release):
 
 
 st.title("✨ What's New")
+# PASTIFY_OCTOBER_2026_UPDATE
+st.subheader("October 2026 — Platform Update")
+st.markdown("""
+Pastify continues to offer its core study tools:
+
+- **Browse Papers:** Explore questions using subject and paper filters.
+- **Worksheet Builder:** Select questions and organize custom worksheets.
+- **Quiz Mode:** Practice using interactive quiz controls.
+- **Timed Test:** Practice with a timed session.
+- **My Progress:** Review your practice activity.
+- **Platform improvements:** Updates to PDF storage infrastructure, navigation, and reliability.
+
+**Important copyright update:** Cambridge examination PDFs, including question papers, mark schemes, and generated PDF downloads, are temporarily unavailable due to copyright restrictions. Other Pastify features remain accessible.
+""")
+st.divider()
 st.write(
     "Explore the latest improvements, new features, "
     "and updates to Pastify."

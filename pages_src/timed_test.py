@@ -29,6 +29,9 @@ DURATION_PRESETS = {"5 min": 5, "10 min": 10, "20 min": 20, "30 min": 30, "60 mi
 
 @st.fragment(run_every="1s")
 def _render_timer(total_seconds: int):
+    # PASTIFY_TIMER_START_FIX
+    if st.session_state.get("timer_start") is None:
+        st.session_state.timer_start = datetime.now()
     if st.session_state.get("finished_test"):
         st.metric("⏳ Time Remaining", "00:00")
         return
