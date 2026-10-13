@@ -199,6 +199,10 @@ def get_pdf_bytes(relative_path: str | None) -> bytes | None:
                 f"Could not load PDF from GitHub ZIP: {relative_path}"
             ) from exc
 
+    if mode == "github_private_zip":
+        from private_pdf_storage import get_private_pdf_bytes
+        return get_private_pdf_bytes(relative_path)
+
     raise ValueError(
         f"Invalid PDF_STORAGE_MODE: {mode!r}. "
         "Use 'local', 'remote', or 'github_zip'."
