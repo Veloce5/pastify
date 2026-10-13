@@ -4,7 +4,7 @@
 
 ### Past papers, made practical.
 
-**An interactive Cambridge A-Level revision platform for finding questions, building worksheets, practising under exam conditions, and tracking progress.**
+**A free, student-built revision platform for finding past-paper questions, creating worksheets, practising under exam conditions, and tracking progress.**
 
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -20,9 +20,11 @@
 
 Finding a particular question in a folder of past-paper PDFs shouldn't be harder than answering it.
 
-**Pastify** transforms Cambridge A-Level past-paper material into a searchable, interactive question bank. Instead of opening papers one by one, students can narrow down questions, assemble targeted practice, take interactive quizzes or timed tests, and review their performance.
+**Pastify** is an independent, free educational project built by former Cambridge students. It organizes supported Cambridge A-Level past-paper questions into a searchable, interactive question bank. Students can narrow down questions, assemble targeted practice, take interactive quizzes or timed tests, and review their performance.
 
-> **Current release — v1.1.0 (MCQ Expansion):** 1,340 multiple-choice questions added, bringing the question bank to **12,383 questions**. See the [release notes](https://github.com/Veloce5/pastify/releases/tag/v1.1.0).
+Pastify is not affiliated with or endorsed by Cambridge International. Permission to display Cambridge copyrighted examination content has been requested and is **pending**; the platform’s current availability should not be interpreted as authorization.
+
+> **Published application release — v1.1.0 (MCQ Expansion):** 1,340 multiple-choice questions added, bringing the question bank to **12,383 questions**. See the [release notes](https://github.com/Veloce5/pastify/releases/tag/v1.1.0).
 
 ## Features
 
@@ -85,7 +87,7 @@ The application uses a modular structure rather than embedding database queries,
 
 - **PDF extraction:** `tools/database/split_papers.py` uses progressively finer text anchors (block → line → span), paper metadata parsing, MCQ-aware processing, and fallback handling for difficult layouts.
 - **Dedicated MCQ utility:** `tools/mcq/mcq_splitter.py` provides a separate command-line tool for splitting supported multiple-choice papers into individual question PDFs.
-- **Hybrid PDF access:** `pdf_storage.py` supports accessing processed PDF assets through local storage and GitHub Releases, reducing reliance on bundling large PDFs with the application code.
+- **Private PDF storage:** `pdf_storage.py` and `private_pdf_storage.py` support retrieving processed PDF assets from an access-controlled GitHub Releases repository. Local storage is also supported for development. The PDF archives and access credentials are not distributed with the public source repository.
 - **Efficient queries:** SQLite indexes support common filtering operations; Streamlit caching reduces repeated database and rendering work.
 - **Responsive interactions:** Streamlit fragments isolate frequently changing UI such as feedback and timed-test countdowns.
 - **Separation of concerns:** Question metadata and student progress are handled through distinct application modules and data flows.
@@ -99,7 +101,7 @@ The application uses a modular structure rather than embedding database queries,
 | PDF processing | PyMuPDF, PyPDF2 |
 | Analytics | Plotly |
 | Interface | Streamlit components, custom CSS, theme management |
-| Asset delivery | Local PDF files, GitHub Releases |
+| Asset delivery | Local files or authenticated private GitHub Releases |
 
 ## Try it online
 
@@ -130,7 +132,11 @@ On Windows, activate the environment using `.venv\Scripts\activate` instead.
 
 The repository includes the application's SQLite question database (`past_papers.db`), but **the complete collection of processed question PDFs is not stored in Git**.
 
-PDFs are accessed using the app's configured storage mechanism, including local `output_questions/` assets and GitHub Releases-hosted assets. If you are running your own copy, confirm that the database and PDF storage settings in `config.py` and `pdf_storage.py` match the assets available to you. Some paper previews or exports may require those assets.
+The hosted application retrieves processed question PDFs from **private GitHub Releases storage** using server-side credentials. Public GitHub Releases no longer host the bulk PDF archives. A public clone does **not** include those private assets or credentials, so PDF-dependent previews, worksheets, and other features may not work without separately authorized materials.
+
+For local development with materials you are authorized to use, configure the local PDF directory and set `PDF_STORAGE_MODE=local`. The hosted deployment uses `PDF_STORAGE_MODE=github_private_zip` with the private repository, release tag, and read token supplied through **Streamlit secrets**, not committed files. Relevant configuration keys are `GITHUB_PRIVATE_PDF_REPO`, `GITHUB_PRIVATE_PDF_RELEASE_TAG`, and `GITHUB_PDF_READ_TOKEN`.
+
+**Security:** Never commit GitHub tokens, Streamlit secrets, private archives, or credentials to this repository. Private storage restricts access to the archives but does not itself grant copyright permission to display individual examination questions.
 
 ### 4. Start the app
 
@@ -140,7 +146,7 @@ python3 -m streamlit run Home.py
 
 Open the local address shown in the terminal (usually `http://localhost:8501`).
 
-> **Deployment:** The hosted application is maintained on the `hosting-ready` branch. `main` is the primary development/reference branch.
+> **Deployment:** Streamlit Cloud deploys the `hosting-ready` branch with `Home.py` as the entry point. Development changes are committed to `main` and synchronized to `hosting-ready` for deployment.
 
 ## Repository guide
 
@@ -188,7 +194,7 @@ Remove `--dry-run` only after reviewing the results. The destination must not al
 
 ### Isolated MCQ integration
 
-The public v1.1.0 release contains **12,383 questions**. A separate local integration database contains **19,103 rows**, including **6,720 additional MCQs**. This expanded dataset has not replaced the published release.
+The published v1.1.0 release was documented as containing **12,383 questions**. A separate local integration database was documented as containing **19,103 rows**, including **6,720 additional MCQs**. These figures describe their respective datasets, not a newly announced public release.
 
 For local integration testing, configure `PASTIFY_DB_PATH`, `PASTIFY_OUTPUT_DIR`, and `PDF_STORAGE_MODE=local` to point to the isolated database and PDF assets.
 
@@ -219,14 +225,18 @@ Read the complete [changelog](CHANGELOG.md) or browse [GitHub Releases](https://
 
 ## Team
 
-| Contributor | Role | Focus |
-| --- | --- | --- |
-| **Dev Joshi** | Co-Founder & Backend Lead | Architecture, databases, PDF processing, application logic, performance |
-| **Veer Sanghvi** | Co-Founder & Frontend Lead | Interface design, frontend experience, user-facing workflows |
+Pastify was created by two former Cambridge students who wanted a more practical way to revise.
+
+| Contributor | Role | Focus | GitHub | LinkedIn |
+| --- | --- | --- | --- | --- |
+| **Dev Joshi** | Co-Founder & Backend Lead | Architecture, databases, PDF processing, application logic, performance | [Veloce5](https://github.com/Veloce5) | [Profile](https://www.linkedin.com/in/dev-joshi-1310ab346/) |
+| **Veer Sanghvi** | Co-Founder & Frontend Lead | Interface design, frontend experience, user-facing workflows | [9958ViceVortex](https://github.com/9958ViceVortex) | [Profile](https://www.linkedin.com/in/veer-sanghvi-b34214379/) |
+
+Learn more in the application's **About Us** page.
 
 ## Project status and usage
 
-Pastify is an independently developed educational project. Examination papers and mark schemes belong to their respective rights holders; this repository's availability does not grant rights to redistribute third-party materials.
+Pastify is an independently developed, free educational project, **not affiliated with or endorsed by Cambridge International**. Cambridge examination papers, questions, and mark schemes belong to their respective rights holders. **Written permission has been requested and is pending.** Neither publication of this repository nor use of private PDF storage grants permission to reproduce, display, or redistribute third-party materials.
 
 **No open-source license is currently specified in this repository.** Until a license is added, do not assume the source code is licensed for unrestricted reuse or redistribution.
 
