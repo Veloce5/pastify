@@ -9,15 +9,31 @@ import streamlit as st
 
 RELEASES = [
     {
-        "version": "1.1.0",
-        "title": "MCQ Expansion",
+        "version": "1.2.0",
+        "title": "Infrastructure & Platform Improvements",
         "date": "October 2026",
         "latest": True,
         "sections": {
             "New": [
-                "Added 1,340 multiple-choice questions across the question bank.",
-                "Expanded the question bank to 12,383 questions.",
+                "Added 1,340 multiple-choice questions, expanding the question bank to 12,383 questions.",
             ],
+            "Improved": [
+                "Improved PDF processing and question-bank infrastructure.",
+                "Introduced access-controlled private PDF storage.",
+                "Improved platform reliability and application navigation.",
+                "Continued improvements to question browsing, worksheets, quizzes, timed tests, and progress tracking.",
+            ],
+            "Important Notice": [
+                "Cambridge examination PDFs, mark schemes, and generated PDF downloads are currently unavailable due to copyright restrictions. Other Pastify features remain accessible.",
+            ],
+        },
+    },
+    {
+        "version": "1.1.0",
+        "title": "MCQ Expansion",
+        "date": "October 2026",
+        "latest": False,
+        "sections": {
             "Improved": [
                 "Improved MCQ PDF processing and question availability.",
                 "Questions without recorded answers are excluded from quizzes.",
@@ -59,21 +75,6 @@ def render_release(release):
 
 
 st.title("✨ What's New")
-# PASTIFY_OCTOBER_2026_UPDATE
-st.subheader("October 2026 — Platform Update")
-st.markdown("""
-Pastify continues to offer its core study tools:
-
-- **Browse Papers:** Explore questions using subject and paper filters.
-- **Worksheet Builder:** Select questions and organize custom worksheets.
-- **Quiz Mode:** Practice using interactive quiz controls.
-- **Timed Test:** Practice with a timed session.
-- **My Progress:** Review your practice activity.
-- **Platform improvements:** Updates to PDF storage infrastructure, navigation, and reliability.
-
-**Important copyright update:** Cambridge examination PDFs, including question papers, mark schemes, and generated PDF downloads, are temporarily unavailable due to copyright restrictions. Other Pastify features remain accessible.
-""")
-st.divider()
 st.write(
     "Explore the latest improvements, new features, "
     "and updates to Pastify."
@@ -88,3 +89,19 @@ st.divider()
 with st.expander("Previous releases", expanded=False):
     for release in RELEASES[1:]:
         render_release(release)
+        if release["version"] == "1.1.0":
+            # PASTIFY_OCTOBER_2026_UPDATE
+            st.subheader("October 2026 — Platform Update")
+            st.markdown("""
+            Pastify continues to offer its core study tools:
+
+            - **Browse Papers:** Explore questions using subject and paper filters.
+            - **Worksheet Builder:** Select questions and organize custom worksheets.
+            - **Quiz Mode:** Practice using interactive quiz controls.
+            - **Timed Test:** Practice with a timed session.
+            - **My Progress:** Review your practice activity.
+            - **Platform improvements:** Updates to PDF storage infrastructure, navigation, and reliability.
+
+            **Important copyright update:** Cambridge examination PDFs, including question papers, mark schemes, and generated PDF downloads, are temporarily unavailable due to copyright restrictions. Other Pastify features remain accessible.
+            """)
+            st.divider()
