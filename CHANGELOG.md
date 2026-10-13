@@ -1,3 +1,9 @@
+## [1.2.0] - Infrastructure & Platform Improvements
+
+- Migrated bulk PDF archives to authenticated private storage.
+- Improved founder profiles and social links.
+- Updated deployment and copyright documentation.
+
 # Pastify Changelog
 
 All notable updates to Pastify are documented here.

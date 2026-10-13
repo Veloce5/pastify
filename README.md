@@ -8,9 +8,9 @@
 
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Release](https://img.shields.io/badge/Release-v1.1.0-2563eb)](https://github.com/Veloce5/pastify/releases/tag/v1.1.0)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-2563eb)](https://github.com/Veloce5/pastify/releases/tag/v1.2.0)
 
-**[🚀 Launch Pastify](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/) · [Latest release](https://github.com/Veloce5/pastify/releases/tag/v1.1.0) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/Veloce5/pastify/issues)**
+**[🚀 Launch Pastify](https://pastify-nmnnanickpby7jtc8y6sls.streamlit.app/) · [Latest release](https://github.com/Veloce5/pastify/releases/tag/v1.2.0) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/Veloce5/pastify/issues)**
 
 </div>
 
@@ -24,7 +24,7 @@ Finding a particular question in a folder of past-paper PDFs shouldn't be harder
 
 Pastify is not affiliated with or endorsed by Cambridge International. Permission to display Cambridge copyrighted examination content has been requested and is **pending**; the platform’s current availability should not be interpreted as authorization.
 
-> **Published application release — v1.1.0 (MCQ Expansion):** 1,340 multiple-choice questions added, bringing the question bank to **12,383 questions**. See the [release notes](https://github.com/Veloce5/pastify/releases/tag/v1.1.0).
+> **Published application release — v1.2.0 (Infrastructure & Platform Improvements):** 1,340 multiple-choice questions added, bringing the question bank to **12,383 questions**. See the [release notes](https://github.com/Veloce5/pastify/releases/tag/v1.2.0).
 
 ## Features
 
@@ -246,6 +246,6 @@ Pastify is an independently developed, free educational project, **not affiliate
 
 **Built to make past-paper practice more focused, flexible, and useful.**
 
-[Back to top](#-pastify) · [View v1.1.0](https://github.com/Veloce5/pastify/releases/tag/v1.1.0)
+[Back to top](#-pastify) · [View v1.2.0](https://github.com/Veloce5/pastify/releases/tag/v1.2.0)
 
 </div>
