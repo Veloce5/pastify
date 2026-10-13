@@ -34,6 +34,9 @@ def _render_pdf_pages(relative_path: str, zoom: float = PDF_RENDER_ZOOM) -> list
 
 
 def get_pdf_page_images(relative_path: str | None) -> list[bytes]:
+    from copyright_settings import ALLOW_CAMBRIDGE_PDFS
+    if not ALLOW_CAMBRIDGE_PDFS:
+        return []  # COPYRIGHT_HOLD_IMAGES
     """Return PNG images for a database-relative PDF path."""
     if not relative_path:
         return []
@@ -45,6 +48,11 @@ def get_pdf_page_images(relative_path: str | None) -> list[bytes]:
 
 
 def render_pdf(relative_path: str | None, empty_message: str = "This file couldn't be found.") -> None:
+    from copyright_settings import ALLOW_CAMBRIDGE_PDFS
+    if not ALLOW_CAMBRIDGE_PDFS:
+        import streamlit as st
+        st.info("PDF temporarily unavailable due to copyright restrictions.")
+        return
     """Render PDF pages in Streamlit."""
     images = get_pdf_page_images(relative_path)
     if not images:
@@ -65,6 +73,9 @@ def render_pdf(relative_path: str | None, empty_message: str = "This file couldn
 # Worksheet Builder
 # ---------------------------------------------------------------------------
 def merge_pdfs(question_paths, answer_paths, progress_bar=None) -> tuple[bytes | None, bytes | None]:
+    from copyright_settings import ALLOW_CAMBRIDGE_PDFS
+    if not ALLOW_CAMBRIDGE_PDFS:
+        return None, None  # COPYRIGHT_HOLD_MERGE
     """Merge PDFs from local or remote storage into question and answer booklets."""
     q_merger, a_merger = PdfMerger(), PdfMerger()
     missing: list[str] = []

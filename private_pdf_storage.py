@@ -85,6 +85,9 @@ def _archive_bytes(repo: str, tag: str, archive_name: str) -> bytes:
 
 
 def get_private_pdf_bytes(relative_path: str | None) -> bytes | None:
+    from copyright_settings import ALLOW_CAMBRIDGE_PDFS
+    if not ALLOW_CAMBRIDGE_PDFS:
+        return None
     if not isinstance(relative_path, str) or not relative_path:
         return None
     path = PurePosixPath(relative_path)

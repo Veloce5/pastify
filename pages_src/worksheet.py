@@ -9,6 +9,7 @@ expensive merge of the wrong 80 questions.
 """
 
 import streamlit as st
+from copyright_settings import ALLOW_CAMBRIDGE_PDFS
 
 import theme
 import utils
@@ -24,6 +25,9 @@ def _confirm_and_generate(cart: list[dict]):
     st.caption("Files missing on disk will be skipped automatically rather than failing the whole export.")
 
     if st.button("Generate now", type="primary", width="stretch"):
+        if not ALLOW_CAMBRIDGE_PDFS:
+            st.info("COPYRIGHT_HOLD_GENERATE: Worksheet PDFs cannot currently be generated due to copyright restrictions.")
+            return
         questions = [item["question_path"] for item in cart]
         answers = [item["answer_path"] for item in cart]
 
@@ -47,6 +51,8 @@ def _confirm_and_generate(cart: list[dict]):
 
 
 def render():
+    if not ALLOW_CAMBRIDGE_PDFS:
+        st.session_state.pop("worksheet_zip", None)  # COPYRIGHT_HOLD_SESSION
     theme.apply_page_theme()
     with st.sidebar:
         theme.theme_toggle()
@@ -87,7 +93,7 @@ def render():
         if st.button(f"Generate Worksheet ({len(cart)} questions)", type="primary", width="stretch"):
             _confirm_and_generate(cart)
 
-    if st.session_state.get("worksheet_zip"):
+    if ALLOW_CAMBRIDGE_PDFS and st.session_state.get("worksheet_zip"):
         utils.add_divider(1)
         st.success(f"✅ Worksheet ready — {st.session_state.worksheet_count} questions.")
         st.download_button(
