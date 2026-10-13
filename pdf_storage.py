@@ -203,3 +203,14 @@ def get_pdf_bytes(relative_path: str | None) -> bytes | None:
         f"Invalid PDF_STORAGE_MODE: {mode!r}. "
         "Use 'local', 'remote', or 'github_zip'."
     )
+
+
+# --- Pastify private PDF storage integration (v1) ---
+from private_pdf_storage import get_private_pdf_bytes as _pastify_get_private_pdf_bytes
+
+_pastify_original_get_pdf_bytes = get_pdf_bytes
+
+def get_pdf_bytes(relative_path: str | None) -> bytes | None:
+    if _get_setting("PDF_STORAGE_MODE", "local").lower() == "github_private_zip":
+        return _pastify_get_private_pdf_bytes(relative_path)
+    return _pastify_original_get_pdf_bytes(relative_path)
