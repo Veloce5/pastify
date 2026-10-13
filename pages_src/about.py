@@ -8,17 +8,6 @@ from profile import render_profile_badge
 
 FOUNDERS = (
     {
-        "name": "Veer Sanghvi",
-        "role": "Co-Founder & Frontend Lead",
-        "bio": (
-            "A former Cambridge student focused on making Pastify clear, "
-            "approachable, and easy to use. Veer leads the frontend "
-            "experience and user-facing design."
-        ),
-        "github": "https://github.com/9958ViceVortex",
-        "linkedin": "https://www.linkedin.com/in/veer-sanghvi-b34214379/",
-    },
-    {
         "name": "Dev Joshi",
         "role": "Co-Founder & Backend Lead",
         "bio": (
@@ -28,6 +17,17 @@ FOUNDERS = (
         ),
         "github": "https://github.com/Veloce5",
         "linkedin": "https://www.linkedin.com/in/dev-joshi-1310ab346/",
+    },
+    {
+        "name": "Veer Sanghvi",
+        "role": "Co-Founder & Frontend Lead",
+        "bio": (
+            "A former Cambridge student focused on making Pastify clear, "
+            "approachable, and easy to use. Veer leads the frontend "
+            "experience and user-facing design."
+        ),
+        "github": "https://github.com/9958ViceVortex",
+        "linkedin": "https://www.linkedin.com/in/veer-sanghvi-b34214379/",
     },
 )
 
